@@ -1,30 +1,26 @@
 {
   "name": "khanh-portfolio",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Personal portfolio for Khanh: competitive programming, C++, AI experiments, software development.",
+  "description": "Personal portfolio for Khanh. Warm editorial paper: Fraunces display type on off-white, one clay accent.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173",
-    "test:e2e": "playwright test",
-    "test:a11y": "playwright test tests/a11y.spec.js"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource-variable/instrument-sans": "^5.3.0",
-    "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@phosphor-icons/react": "^2.1.10",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "@fontsource-variable/fraunces": "^5.2.5",
+    "@fontsource-variable/instrument-sans": "^5.2.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.2",
-    "@playwright/test": "^1.56.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "sharp": "^0.35.5",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.1"
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "typescript": "^5.8.0",
+    "vite": "^6.3.5"
   }
 }

@@ -1,82 +1,46 @@
-# Khanh Portfolio Website
+# Khánh · personal portfolio
 
-A static personal portfolio for Khanh: C++, competitive programming, AI
-experiments, and software development. Frontend only. No backend, no database,
-no auth, no required API.
+A single-page personal site: warm editorial paper, Fraunces display type on an
+off-white canvas, one clay accent. React 19 + TypeScript + Vite, hand-written CSS,
+self-hosted fonts, no runtime third-party requests.
 
-The design is an "algorithm notebook": faint grid paper, ink-navy text, and one
-red pen used only to mark what matters. See `DESIGN.md` for the direction and
-`docs/DESIGN-NOTES.md` for the measured contrast and layout values.
-
-## Stack
-
-- **Vite** for the dev server and build.
-- **React** for the components.
-- **Tailwind CSS** for the reset and utilities; most of the visual identity is
-  hand-written CSS in `src/styles.css`.
-- **Self-hosted fonts** (Instrument Sans for prose, IBM Plex Mono for labels and
-  code). No font CDN, no third-party requests at runtime.
-- **Phosphor Icons** for the interface icons.
-
-## Getting started
+## Run it
 
 ```bash
 npm install
-npm run dev        # dev server
-npm run build      # production build into dist/
-npm run preview    # serve the built site on http://localhost:4173
+npm run dev        # local dev server
+npm run build      # typecheck + production build
+npm run preview    # serve the built site
 ```
 
-The build uses `base: './'`, so `dist/` can be dropped on any static host without
-further configuration.
+## Editing the content
 
-## Tests and audits
+Everything you need to change lives in **`src/content/site.ts`**:
 
-The end-to-end suite runs against the real production build served by
-`vite preview`, so what is verified is what ships.
+- Name, role, tagline, introduction (hero).
+- About paragraphs and the "currently learning" line.
+- Projects: add, remove, or rewrite entries. Set `featured: true` on one project
+  to get the large showcase layout.
+- Interests, skill groups, journey timeline, contact links, footer note.
 
-```bash
-npm run test:e2e      # Playwright: desktop + mobile projects
-npm run test:a11y     # axe-core accessibility scans
-```
+Links and values wrapped in square brackets (like `[GitHub URL]`) render as
+honest placeholders, never as fake links. Replace the bracketed string with a
+real URL and the UI automatically turns it into a working link. No component
+edits needed.
 
-Audit scripts (run the preview server first):
+## Adding images
 
-```bash
-node scripts/layout-audit.mjs   # overflow, tap targets, text size across 5 viewports
-node scripts/contrast.mjs       # WCAG contrast ratios for the palette
-node scripts/sections.mjs       # per-section screenshots for visual review
-node scripts/screenshots.mjs    # full-page screenshots, light and dark
-node scripts/theme-check.mjs    # verifies the theme boots from system preference
-```
+- Portrait: drop a file at `public/images/portrait.jpg` and use it in
+  `src/components/Hero.tsx` (the placeholder frame explains this on the page too).
+- Project screenshots: set the `image` field of a project in `site.ts` to a path
+  under `public/` (e.g. `/images/my-project.png`). While `image` is `null`, the
+  showcase draws a deliberate dashed placeholder panel.
 
-## Content
-
-All copy and data live in `src/content/`. Editing content never requires touching
-layout.
-
-- `site.js` holds the person, nav, about, projects, skills, contact links, and
-  footer.
-- `journal.js` holds the practice-log entries; an empty array renders an honest
-  empty state.
-
-### Honesty rules
-
-Nothing on this site is invented. Any fact the owner has not supplied yet is
-`null` or a bracketed placeholder like `[ GitHub URL ]`, and the UI renders it as
-a visible placeholder rather than filling the gap with plausible-looking copy. To
-activate a link or value, replace the placeholder with the real string; the UI
-stops drawing it as pending automatically.
-
-## Project layout
+## Structure
 
 ```
-src/
-  components/    section and primitive components
-  content/       all copy and data
-  hooks.js       IntersectionObserver / theme / clipboard hooks
-  styles.css     the visual identity
-scripts/         audit and screenshot tooling
-tests/           Playwright specs and axe scans
-docs/            measured design notes
+src/content/site.ts   all editable content, typed
+src/components/       one file per page section
+src/styles.css        design tokens + all styles
+src/hooks.ts          reduced-motion-aware scroll reveal
 ```
