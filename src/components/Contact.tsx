@@ -1,9 +1,11 @@
-import { contact, isPlaceholder } from "../content/site";
+import { isPlaceholder } from "../content/site";
 import { useReveal } from "../hooks";
+import { useSite } from "../site-context";
 
 export default function Contact() {
+  const { t } = useSite();
   const reveal = useReveal<HTMLElement>();
-  const hasEmail = contact.email !== "" && !isPlaceholder(contact.email);
+  const hasEmail = t.contact.email !== "" && !isPlaceholder(t.contact.email);
   return (
     <section
       className="section contact"
@@ -13,22 +15,22 @@ export default function Contact() {
     >
       <div className={"wrap wrap-narrow " + reveal.className}>
         <h2 id="contact-title" className="contact-heading">
-          {contact.heading}
+          {t.contact.heading}
         </h2>
-        <p className="contact-text">{contact.text}</p>
+        <p className="contact-text">{t.contact.text}</p>
         <ul className="contact-links">
           <li>
             {hasEmail ? (
-              <a className="text-link" href={`mailto:${contact.email}`}>
-                Email
+              <a className="text-link" href={`mailto:${t.contact.email}`}>
+                {t.ui.emailLabel}
               </a>
             ) : (
-              <span className="pending" title="Add your real email in src/content/site.ts">
-                Email: {contact.email}
+              <span className="pending" title={t.ui.pendingEmailHint}>
+                {t.ui.emailLabel}: {t.contact.email}
               </span>
             )}
           </li>
-          {contact.links.map((link) => {
+          {t.contact.links.map((link) => {
             const set = link.value !== "" && !isPlaceholder(link.value);
             return (
               <li key={link.label}>
@@ -37,7 +39,7 @@ export default function Contact() {
                     {link.label}
                   </a>
                 ) : (
-                  <span className="pending" title="Add the real URL in src/content/site.ts">
+                  <span className="pending" title={t.ui.pendingUrlHint}>
                     {link.label}: {link.value}
                   </span>
                 )}

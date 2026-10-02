@@ -7,12 +7,14 @@ import Skills from "./components/Skills";
 import Journey from "./components/Journey";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import { useSite } from "./site-context";
 
 export default function App() {
+  const { t } = useSite();
   return (
     <>
       <a className="skip-link" href="#main">
-        Skip to content
+        {t.ui.skipToContent}
       </a>
       <Header />
       <main id="main">

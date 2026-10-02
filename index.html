@@ -1,20 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Khánh · Student, Programmer, Creator</title>
+    <meta name="theme-color" content="#faf6ef" />
+    <title>Khánh · Sinh viên, Lập trình viên, Người sáng tạo</title>
     <meta
       name="description"
-      content="Personal site of Khánh: student, programmer, creator. Projects, interests, and the journey so far."
+      content="Trang cá nhân của Khánh: sinh viên, lập trình viên, người sáng tạo. Dự án, sở thích, và hành trình đến hiện tại."
     />
     <meta property="og:title" content="Khánh" />
     <meta
       property="og:description"
-      content="Curious about technology. Driven to build things."
+      content="Tò mò với công nghệ. Thích tạo ra thứ gì đó."
     />
     <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Set theme before first paint so there is no flash of the wrong mode.
+      (function () {
+        try {
+          var t = localStorage.getItem("portfolio-theme");
+          if (!t)
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

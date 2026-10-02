@@ -4,9 +4,12 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/instrument-sans";
 import "./styles.css";
 import App from "./App";
+import { SiteProvider } from "./site-context";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <SiteProvider>
+      <App />
+    </SiteProvider>
   </StrictMode>,
 );

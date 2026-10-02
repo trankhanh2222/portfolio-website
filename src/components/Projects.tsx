@@ -1,38 +1,47 @@
-import { isPlaceholder, projects, type Project } from "../content/site";
+import { isPlaceholder, type Project } from "../content/site";
 import { useReveal } from "../hooks";
+import { useSite } from "../site-context";
 
 function ProjectLinks({ project }: { project: Project }) {
+  const { t } = useSite();
   const hasGithub = project.githubUrl !== "" && !isPlaceholder(project.githubUrl);
   const hasDemo = project.demoUrl !== "" && !isPlaceholder(project.demoUrl);
   return (
     <p className="project-links">
       {hasGithub ? (
         <a className="text-link" href={project.githubUrl} target="_blank" rel="noreferrer">
-          Code
+          {t.ui.code}
         </a>
       ) : (
-        <span className="pending" title="Add the real URL in src/content/site.ts">
-          Code: [GitHub URL]
+        <span className="pending" title={t.ui.pendingUrlHint}>
+          {t.ui.code}: {project.githubUrl || "[GitHub URL]"}
         </span>
       )}
       {hasDemo ? (
         <a className="text-link" href={project.demoUrl} target="_blank" rel="noreferrer">
-          Live demo
+          {t.ui.liveDemo}
         </a>
       ) : (
-        <span className="pending" title="Add the real URL in src/content/site.ts">
-          Demo: [Live Demo URL]
-        </span>
+        project.demoUrl !== "" && (
+          <span className="pending" title={t.ui.pendingUrlHint}>
+            {t.ui.liveDemo}: {project.demoUrl}
+          </span>
+        )
       )}
     </p>
   );
 }
 
 function Shot({ project }: { project: Project }) {
+  const { t } = useSite();
   if (project.image !== null) {
     return (
       <figure className="shot">
-        <img src={project.image} alt={`Screenshot of ${project.name}`} loading="lazy" />
+        <img
+          src={project.image}
+          alt={t.ui.screenshotAlt.replace("{name}", project.name)}
+          loading="lazy"
+        />
       </figure>
     );
   }
@@ -45,18 +54,19 @@ function Shot({ project }: { project: Project }) {
   );
 }
 
-function FeaturedProject({ project }: { project: Project }) {
-  const reveal = useReveal<HTMLElement>();
+function FeaturedProject({ project, delay }: { project: Project; delay: number }) {
+  const { t } = useSite();
+  const reveal = useReveal<HTMLElement>(delay);
   return (
     <article className="project-featured" ref={reveal.ref}>
-      <div className={"project-featured-grid " + reveal.className}>
+      <div className={"project-featured-grid " + reveal.className} style={reveal.style}>
         <Shot project={project} />
         <div>
           <p className="project-year">{project.year}</p>
           <h3 className="project-title">{project.name}</h3>
           <p className="project-summary">{project.summary}</p>
           <p className="project-detail">{project.detail}</p>
-          <ul className="stack" aria-label="Technologies">
+          <ul className="stack" aria-label={t.ui.technologies}>
             {project.stack.map((tech) => (
               <li key={tech}>{tech}</li>
             ))}
@@ -68,17 +78,18 @@ function FeaturedProject({ project }: { project: Project }) {
   );
 }
 
-function ProjectRow({ project }: { project: Project }) {
-  const reveal = useReveal<HTMLElement>();
+function ProjectRow({ project, delay }: { project: Project; delay: number }) {
+  const { t } = useSite();
+  const reveal = useReveal<HTMLElement>(delay);
   return (
     <article className="project-row" ref={reveal.ref}>
-      <div className={"project-row-grid " + reveal.className}>
+      <div className={"project-row-grid " + reveal.className} style={reveal.style}>
         <Shot project={project} />
         <div>
           <p className="project-year">{project.year}</p>
           <h3 className="project-title">{project.name}</h3>
           <p className="project-summary">{project.summary}</p>
-          <ul className="stack" aria-label="Technologies">
+          <ul className="stack" aria-label={t.ui.technologies}>
             {project.stack.map((tech) => (
               <li key={tech}>{tech}</li>
             ))}
@@ -91,23 +102,24 @@ function ProjectRow({ project }: { project: Project }) {
 }
 
 export default function Projects() {
-  const featured = projects.filter((p) => p.featured);
-  const rest = projects.filter((p) => !p.featured);
+  const { t } = useSite();
+  const header = useReveal<HTMLDivElement>();
+  const featured = t.projects.filter((p) => p.featured);
+  const rest = t.projects.filter((p) => !p.featured);
   return (
     <section className="section projects" id="projects" aria-labelledby="projects-title">
       <div className="wrap">
-        <h2 id="projects-title" className="section-title">
-          Projects
-        </h2>
-        <p className="section-sub">
-          Sample entries below, in brackets until real work lands here. Each one is a slot to
-          fill, not a claim.
-        </p>
-        {featured.map((project) => (
-          <FeaturedProject key={project.name + project.year} project={project} />
+        <div ref={header.ref} className={header.className}>
+          <h2 id="projects-title" className="section-title">
+            {t.ui.projectsTitle}
+          </h2>
+          <p className="section-sub">{t.ui.projectsSub}</p>
+        </div>
+        {featured.map((project, i) => (
+          <FeaturedProject key={project.name + project.year} project={project} delay={i * 90} />
         ))}
-        {rest.map((project) => (
-          <ProjectRow key={project.name + project.year} project={project} />
+        {rest.map((project, i) => (
+          <ProjectRow key={project.name + project.year} project={project} delay={i * 90} />
         ))}
       </div>
     </section>

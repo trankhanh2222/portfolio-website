@@ -20,7 +20,7 @@
   --accent: #9c4423;
   --accent-visual: #b4552d;
   --rule: #ded5c4;
-
+  --scroll-behavior: smooth;
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Instrument Sans Variable", "Segoe UI", system-ui, sans-serif;
 
@@ -28,6 +28,51 @@
   --wrap: 68rem;
   --wrap-narrow: 44rem;
   --pad-x: clamp(1.25rem, 4vw, 2.5rem);
+
+  /* Motion tokens (from the motion-design skill) */
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --dur-reveal: 600ms;
+}
+
+/* Dark theme: same warm paper logic, inverted to ink and lamplight.
+   Applied via <html data-theme="dark"> — set by site-context. */
+:root[data-theme="dark"] {
+  --canvas: #181613;
+  --canvas-raised: #211e1a;
+  --ink: #ece5d8;
+  --ink-soft: #a89f8f;
+  --accent: #d97a4e;
+  --accent-visual: #c56a41;
+  --rule: #35302a;
+}
+
+/* Fallback for browsers without the View Transitions API: smooth the
+   light/dark swap with a plain cross-fade. The class is added in JS right
+   before the theme attribute changes and removed after. */
+html.theme-anim body,
+html.theme-anim .site-header,
+html.theme-anim .projects,
+html.theme-anim .skills,
+html.theme-anim .site-footer {
+  transition: background-color 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* Theme toggle circle reveal (View Transitions API). The JS animates a
+   clip-path circle on the incoming snapshot growing from the button; the
+   default cross-fades are disabled so only the circle motion is visible. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
 }
 
 *,
@@ -36,14 +81,17 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+:root {
+  color-scheme: light;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -104,6 +152,12 @@ a {
 
 .section {
   padding-block: var(--space-section);
+}
+
+/* Keep section headings clear of the sticky header on direct hash jumps. */
+section[id],
+#top {
+  scroll-margin-top: 5.5rem;
 }
 
 .section-title {
@@ -216,11 +270,17 @@ button:focus-visible {
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 0% 2px;
-  transition: background-size 0.25s ease;
+  transition: background-size 0.25s ease, color 150ms ease;
 }
 
 .site-nav a:hover,
 .site-nav a:focus-visible {
+  background-size: 100% 2px;
+  color: var(--accent);
+}
+
+/* Scroll-spy: the section currently in view keeps its underline lit. */
+.site-nav a.active {
   background-size: 100% 2px;
   color: var(--accent);
 }
@@ -792,8 +852,8 @@ button:focus-visible {
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 0.6s ease,
-    transform 0.6s ease;
+    opacity var(--dur-reveal) var(--ease-out-quart),
+    transform var(--dur-reveal) var(--ease-out-quart);
 }
 
 .reveal.shown {
@@ -801,10 +861,86 @@ button:focus-visible {
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
+/* Hero entrance: staged rise on first paint. Illustrative and low-frequency,
+   so ease-out-expo at ~800ms with small delays is within the motion tokens. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.4rem);
+  }
+  to {
     opacity: 1;
     transform: none;
-    transition: none;
   }
+}
+
+.hero-rise {
+  opacity: 0;
+  animation: hero-rise 800ms cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.hero-rise-1 { animation-delay: 60ms; }
+.hero-rise-2 { animation-delay: 160ms; }
+.hero-rise-3 { animation-delay: 260ms; }
+.hero-rise-4 { animation-delay: 360ms; }
+.hero-rise-5 { animation-delay: 480ms; }
+
+@keyframes portrait-settle {
+  from {
+    opacity: 0;
+    transform: translateY(1.8rem) rotate(-1.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-1.2deg);
+  }
+}
+
+.hero-portrait {
+  opacity: 0;
+  animation: portrait-settle 900ms cubic-bezier(0.19, 1, 0.22, 1) 320ms forwards;
+}
+
+/* Header controls (theme + language toggles) */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 150ms ease, background-color 150ms ease,
+    transform 180ms var(--ease-out-quart);
+}
+
+@media (hover: hover) {
+  .icon-button:hover {
+    color: var(--accent);
+    background: var(--canvas-raised);
+    transform: translateY(-1px);
+  }
+}
+
+.icon-button:active {
+  transform: scale(0.94);
+}
+
+.icon-button svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: block;
 }

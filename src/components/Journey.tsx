@@ -1,7 +1,8 @@
-import { journey } from "../content/site";
 import { useReveal } from "../hooks";
+import { useSite } from "../site-context";
 
 export default function Journey() {
+  const { t } = useSite();
   const reveal = useReveal<HTMLElement>();
   return (
     <section
@@ -12,11 +13,11 @@ export default function Journey() {
     >
       <div className={"wrap wrap-narrow " + reveal.className}>
         <h2 id="journey-title" className="section-title">
-          The journey so far
+          {t.ui.journeyTitle}
         </h2>
-        <p className="section-sub">Example milestones. Every date and event here is yours to overwrite.</p>
+        <p className="section-sub">{t.ui.journeySub}</p>
         <ol className="timeline">
-          {journey.map((entry) => (
+          {t.journey.map((entry) => (
             <li key={entry.period + entry.title}>
               <p className="timeline-period">{entry.period}</p>
               <h3 className="timeline-title">{entry.title}</h3>
