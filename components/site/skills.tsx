@@ -1,10 +1,31 @@
 "use client"
 
-import { Reveal } from "@/components/site/reveal"
+import { motion } from "motion/react"
+import { BlurFade } from "@/components/ui/blur-fade"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
+import { cn } from "@/lib/utils"
 
 const STEPS = 4
+
+const cellVariants = {
+  hidden: { opacity: 0, scale: 0.3 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { delay: 0.05 * i, duration: 0.3, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+}
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { delay: 0.05 * i, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+}
 
 function TierMeter({ label, level }: { label: string; level: number }) {
   return (
@@ -14,12 +35,17 @@ function TierMeter({ label, level }: { label: string; level: number }) {
       </span>
       <span aria-hidden="true" className="inline-flex gap-1">
         {Array.from({ length: STEPS }).map((_, i) => (
-          <span
+          <motion.span
             key={i}
-            className={
-              "size-2 rounded-[2px] transition-colors " +
-              (i < level ? "bg-primary" : "bg-border")
-            }
+            custom={i}
+            variants={cellVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            className={cn(
+              "bg-border size-2 rounded-[2px]",
+              i < level && "bg-primary",
+            )}
           />
         ))}
       </span>
@@ -32,33 +58,40 @@ export function Skills() {
   const { skills } = t
 
   return (
-    <section id="skills" className="scroll-mt-24 py-20 sm:py-28">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-[210px_minmax(0,1fr)] md:gap-16">
-        <Reveal>
+    <section id="skills" className="scroll-mt-24 py-14 sm:py-20">
+      <div className="mx-auto grid max-w-6xl gap-8 px-6 md:grid-cols-[210px_minmax(0,1fr)] md:gap-12">
+        <BlurFade inView direction="up">
           <SectionHeading index={skills.index} title={skills.title} />
-        </Reveal>
+        </BlurFade>
 
-        <Reveal delay={0.08} className="max-w-3xl">
-          <p className="text-muted-foreground mb-8 text-sm">{skills.note}</p>
+        <div className="max-w-3xl">
+          <BlurFade inView direction="up">
+            <p className="text-muted-foreground mb-6 text-sm">{skills.note}</p>
+          </BlurFade>
 
           <ul className="border-border border-b">
-            {skills.rows.map((row) => {
+            {skills.rows.map((row, i) => {
               const tier = skills.tiers[row.tier]
               return (
-                <li
+                <motion.li
                   key={row.name}
-                  className="border-border grid gap-2 border-t py-5 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_max-content] sm:items-baseline sm:gap-8"
+                  custom={i}
+                  variants={rowVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-40px" }}
+                  className="border-border grid gap-2 border-t py-4 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_max-content] sm:items-baseline sm:gap-8"
                 >
                   <span className="font-medium">{row.name}</span>
                   <span className="text-muted-foreground text-sm">{row.detail}</span>
                   <span className="sm:justify-self-end">
                     <TierMeter label={tier.label} level={tier.level} />
                   </span>
-                </li>
+                </motion.li>
               )
             })}
           </ul>
-        </Reveal>
+        </div>
       </div>
     </section>
   )
