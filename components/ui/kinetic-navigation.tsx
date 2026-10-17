@@ -208,16 +208,26 @@ export function KineticNavigation({
         })
       } else {
         navWrap.setAttribute("data-nav", "closed")
-        tl.to(overlay, { autoAlpha: 0, duration: d(0.3) })
-          .to(menu, { xPercent: 120, duration: d(0.5) }, "<")
-        // ✕ morphs back into the hamburger. Guarded by wasOpenRef so the
-        // initial closed-mount run (no inline state yet) never tweens.
+        // Mirror of the open choreography. Guarded by wasOpenRef: the initial
+        // closed-mount run has no inline state to animate at all.
         if (wasOpenRef.current) {
           wasOpenRef.current = false
+          tl.to(fadeTargets, { autoAlpha: 0, duration: d(0.2), ease: "power1.in" }, 0)
+            .to(
+              menuLinks,
+              { yPercent: 140, rotate: -8, stagger: { each: d(0.045), from: "end" }, duration: d(0.4), ease: "power2.in" },
+              0,
+            )
+            .to(
+              bgPanels,
+              { xPercent: 101, skewX: -6, transformOrigin: "right center", stagger: { each: d(0.1), from: "end" }, duration: d(0.55), ease: "power2.in" },
+              d(0.12),
+            )
+            .to(overlay, { autoAlpha: 0, duration: d(0.25) }, d(0.4))
           if (topBar) {
-            tl.to(topBar, { y: 0, rotate: 0, duration: d(0.4), ease: "power2.out" }, "<")
+            tl.to(topBar, { y: 0, rotate: 0, duration: d(0.4), ease: "power2.out" }, d(0.05))
               .to(bottomBar ?? [], { y: 0, rotate: 0, duration: d(0.4), ease: "power2.out" }, "<")
-              .to(midBar ?? [], { opacity: 1, scaleX: 1, duration: d(0.35), ease: "power2.out" }, "<0.08")
+              .to(midBar ?? [], { opacity: 1, scaleX: 1, duration: d(0.35), ease: "power2.out" }, d(0.12))
           }
           // Return keyboard focus to the trigger once the panel is gone.
           tl.call(() => menuButton instanceof HTMLElement && menuButton.focus())
