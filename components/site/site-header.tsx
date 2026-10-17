@@ -85,7 +85,6 @@ export function SiteHeader() {
       }
       links={links}
       controls={controls}
-      hint={t.ui.menuOpen}
       openLabel={t.ui.menuOpen}
       closeLabel={t.ui.menuClose}
     />
