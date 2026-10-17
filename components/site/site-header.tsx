@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { HyperLabel } from "@/components/ui/hyper-label"
 import { KineticNavigation } from "@/components/ui/kinetic-navigation"
+import { Pending } from "@/components/site/pending"
 import { useLanguage } from "@/providers/language-provider"
 import { useTheme } from "next-themes"
 
@@ -66,6 +67,43 @@ export function SiteHeader() {
     </div>
   )
 
+  // Secondary column inside the fullscreen menu: direct line, the footer's
+  // social trio, credit. Everything unresolved renders as Pending tokens.
+  // The credit year comes from content (footer.since) — a clock read would
+  // be an unstable value during prerender under Cache Components.
+  const meta = (
+    <>
+      <div data-menu-fade>
+        <p className="menu-meta-label">{t.menu.touch}</p>
+        <div className="menu-meta-row">
+          {t.contact.email ? (
+            <a href={`mailto:${t.contact.email}`}>{t.contact.email}</a>
+          ) : (
+            <Pending>{t.contact.emailPh}</Pending>
+          )}
+        </div>
+      </div>
+      <div data-menu-fade>
+        <p className="menu-meta-label">{t.menu.elsewhere}</p>
+        {t.footer.socials.map((social) => (
+          <div key={social.name} className="menu-meta-row">
+            <span>
+              <HyperLabel text={social.name} className="py-0" duration={600} />
+            </span>
+            {social.href ? (
+              <a href={social.href}>{social.name}</a>
+            ) : (
+              <Pending>{social.ph}</Pending>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="menu-meta-credit" data-menu-fade>
+        © {t.footer.since} · {t.person.name}
+      </p>
+    </>
+  )
+
   return (
     <KineticNavigation
       preNav={
@@ -85,6 +123,7 @@ export function SiteHeader() {
       }
       links={links}
       controls={controls}
+      meta={meta}
       openLabel={t.ui.menuOpen}
       closeLabel={t.ui.menuClose}
     />
