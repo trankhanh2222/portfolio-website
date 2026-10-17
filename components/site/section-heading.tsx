@@ -1,11 +1,12 @@
 "use client"
 
-import { MorphText } from "@/components/ui/morph-text"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { cn } from "@/lib/utils"
 
 /**
- * Section heading: an index label, a one-dot section mark, and a morphing
- * title (languages change without a layout jump).
+ * Section heading: an index label, a one-dot section mark, and a HyperText
+ * title — it scrambles into place the first time it scrolls into view and
+ * re-scrambles whenever the locale changes.
  */
 export function SectionHeading({
   index,
@@ -24,8 +25,13 @@ export function SectionHeading({
         </span>
       )}
       <span aria-hidden="true" className="bg-primary size-1.5 shrink-0 translate-y-[-2px] rounded-full" />
-      <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-        <MorphText text={title} className="align-baseline" />
+      <h2 className="text-foreground font-mono text-lg font-semibold tracking-wide uppercase sm:text-xl">
+        <HyperLabel
+          text={title}
+          className="py-0 pb-0.5 align-baseline"
+          duration={900}
+          startOnView
+        />
       </h2>
     </div>
   )

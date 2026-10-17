@@ -16,10 +16,19 @@ One static page, two languages (EN/VI), dark-first with a signal-orange identity
 
 | Piece | What it does |
 | --- | --- |
-| `components/ui/sonar-grid.tsx` | Canvas dot field behind the hero. Idles with an ambient "ping" every few seconds; tap anywhere to send your own expanding ring. Theme-aware (reads `text-primary`), pauses off-screen and in hidden tabs, respects `prefers-reduced-motion`. Vendored from [21st.dev](https://21st.dev) and kept upstream-faithful. |
+| `components/ui/sonar-grid.tsx` | Canvas dot field rendered as a **fixed full-page backdrop** (`components/site/sonar-field.tsx`). No ambient waves — the only way one appears is a tap anywhere (the layer listens on `window`, so text and buttons still receive events). Theme-aware, pauses in hidden tabs, respects `prefers-reduced-motion`. Vendored from [21st.dev](https://21st.dev); adapted: `listenOn` prop for the window-tap mode. |
+| `components/ui/hyper-label.tsx` | Magic UI's **HyperText** driven by a value: labels render plain on first paint, then scramble into the new text exactly once per locale change (`key`-remount). Section headings additionally use `startOnView`, so they also scramble in when scrolled into view. Reduced motion swaps instantly. Note: HyperText uppercases the characters it settles on. |
 | `components/ui/shutter-glyph-footer.tsx` | Signal-orange footer with the name drawn as a giant SVG display alphabet (no font — pure geometry). One letter is swapped for a "shutter" whose three blades track your pointer; letters flip on click and scramble on hover. Adapted from the same source: the newsletter signup was removed and the first column now carries a contact CTA; links without an `href` render as honest pending placeholders. (The display alphabet covers A–Z only, so the wordmark is spelled without diacritics.) |
-| `components/ui/morph-text.tsx` | Custom one-shot text morph. Magic UI's `morphing-text` loops a `texts` array forever; this wrapper keeps the same blur math (`#threshold` SVG filter) but plays **exactly one morph** whenever the `text` prop changes — designed to animate the EN↔VI swap everywhere a label appears. Falls back to an instant swap under `prefers-reduced-motion`; screen readers only hear the final label. |
-| `components/ui/animated-theme-toggler.tsx` | Magic UI theme toggle (circle variant) driving `next-themes` with a View Transitions circular wipe. |
+| `components/ui/scroll-progress.tsx` | Magic UI reading-progress bar pinned to the top edge, recolored to the signal orange. |
+
+## Animation ladder (basic → advanced)
+
+- **Hero enter** — staggered rise + blur (`motion`), skipped under reduced motion.
+- **BlurFade reveals** — every section block fades up with a blur dissolve; paragraphs stagger by index.
+- **Rows stagger** — skill rows and contact links slide in one after another; the skill **tier meter** pops cell by cell.
+- **HyperText headings** — section titles scramble into place when they first scroll into view (and on every locale change).
+- **Scroll-linked timeline** — the Experience rail's progress line is driven by `useScroll` + `useSpring`, scaled to how far you've scrolled through the list.
+- **View Transitions** — the theme toggle uses the Magic UI `animated-theme-toggler` circle wipe.
 
 ## Runs like this
 
@@ -64,7 +73,7 @@ Language choice persists in `localStorage` (`portfolio-locale`); the theme in
 ```
 app/                    layout (providers, fonts, metadata), page, globals.css (tokens), icon.svg
 components/site/        Header, Hero, About, Skills, Experience, Contact, SiteFooter + primitives
-components/ui/          shadcn primitives + sonar-grid, shutter-glyph-footer, morph-text, morphing-text (stock), theme toggler, threshold-filter
+components/ui/          shadcn primitives + sonar-grid, shutter-glyph-footer, hyper-text/hyper-label, blur-fade, scroll-progress, theme toggler
 content/site.ts         all EN/VI copy and data (single source of truth)
 providers/              theme-provider (next-themes), language-provider (locale + `t`)
 tests/smoke.spec.ts     Playwright smoke suite (structure, language, theme, keyboard)
@@ -81,5 +90,5 @@ tests/smoke.spec.ts     Playwright smoke suite (structure, language, theme, keyb
   raise a React #418 hydration error.
 - Language restore also happens in a mount effect (same pattern as
   next-themes): the EN default renders first, the stored VI choice applies
-  right after mount — and the label morph makes the correction read as a
-  transition, not a flash.
+  right after mount — and the HyperText scramble makes the correction
+  read as a deliberate transition, not a flash.

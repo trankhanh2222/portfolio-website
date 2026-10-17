@@ -62,7 +62,7 @@ const en = {
   hero: {
     ctaPrimary: { label: "Get in touch", href: "#contact" },
     ctaSecondary: { label: "About me", href: "#about" },
-    hint: "Tap anywhere on the field — every ping is yours.",
+    hint: "Tap anywhere — every ping is yours.",
   },
 
   about: {
@@ -219,7 +219,7 @@ const vi: Content = {
   hero: {
     ctaPrimary: { label: "Liên hệ ngay", href: "#contact" },
     ctaSecondary: { label: "Về tôi", href: "#about" },
-    hint: "Chạm vào nền lưới — mỗi sóng sonar là của bạn.",
+    hint: "Chạm bất cứ đâu — mỗi sóng sonar là của bạn.",
   },
 
   about: {

@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "motion/react"
 import { ArrowRight } from "lucide-react"
-import { SonarGrid } from "@/components/ui/sonar-grid"
 import { useLanguage } from "@/providers/language-provider"
 
 const enter = (delay: number, reduce: boolean | null) =>
@@ -19,22 +18,14 @@ export function Hero() {
   const reduce = useReducedMotion()
 
   return (
-    <SonarGrid
-      id="top"
-      className="min-h-svh w-full bg-background"
-      spacing={26}
-      ringWidth={86}
-      speed={240}
-      amplitude={2.1}
-      pingArea={[0.18, 0.2, 0.82, 0.75]}
-    >
+    <section id="top" className="relative flex min-h-svh items-center justify-center overflow-hidden">
       {/* A soft wash behind the copy keeps it legible while rings pass underneath. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_36%_32%_at_50%_50%,var(--color-background)_0%,transparent_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_42%_38%_at_50%_50%,var(--color-background)_0%,transparent_100%)]"
       />
 
-      <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col items-center justify-center px-6 py-28 text-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-28 text-center">
         <div className="flex max-w-2xl flex-col items-center">
           <motion.p
             {...enter(0, reduce)}
@@ -95,6 +86,6 @@ export function Hero() {
       >
         {t.hero.hint}
       </motion.p>
-    </SonarGrid>
+    </section>
   )
 }

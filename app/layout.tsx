@@ -5,7 +5,6 @@ import "@fontsource/ibm-plex-mono/500.css"
 import "./globals.css"
 import { ThemeProvider } from "@/providers/theme-provider"
 import { LanguageProvider } from "@/providers/language-provider"
-import { ThresholdFilter } from "@/components/ui/threshold-filter"
 
 export const metadata: Metadata = {
   title: "Khanh — Portfolio",
@@ -30,10 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem={false}
           disableTransitionOnChange
         >
-          <LanguageProvider>
-            <ThresholdFilter />
-            {children}
-          </LanguageProvider>
+          <LanguageProvider>{children}</LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

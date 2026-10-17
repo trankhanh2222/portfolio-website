@@ -22,6 +22,12 @@ export interface SonarGridProps extends React.ComponentProps<"div"> {
   amplitude?: number
   /** Emit a ping where the user taps or clicks. */
   interactive?: boolean
+  /**
+   * Where the tap listener attaches. `"self"` (the default) suits an inline,
+   * clickable field. A fixed full-page layer that sits behind the content
+   * must use `"window"` so taps anywhere still reach it.
+   */
+  listenOn?: "self" | "window"
   /** Maximum simultaneous rings. Older rings are dropped first. */
   maxRings?: number
   /** Start with one ring already mid-expansion so the very first frame shows the idea. */
@@ -55,6 +61,7 @@ export function SonarGrid({
   ringWidth = 90,
   amplitude = 2.2,
   interactive = true,
+  listenOn = "self",
   maxRings = 6,
   seedPing = true,
   pingArea = [0.15, 0.2, 0.85, 0.8],
@@ -69,9 +76,9 @@ export function SonarGrid({
   const refreshRef = React.useRef<() => void>(() => {})
 
   // The render loop reads props through this ref so knob changes apply live without restarting it.
-  const opts = React.useRef({ spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, seedPing, pingArea })
+  const opts = React.useRef({ spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, listenOn, maxRings, seedPing, pingArea })
   // eslint-disable-next-line react-hooks/refs -- vendored from 21st.dev: the canvas loop reads fresh props on every render on purpose
-  opts.current = { spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, seedPing, pingArea }
+  opts.current = { spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, listenOn, maxRings, seedPing, pingArea }
 
   const setHost = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -221,15 +228,21 @@ export function SonarGrid({
       wake()
     }
 
-    const onDown = (e: PointerEvent) => {
+    const onDown = (e: Event) => {
       if (!opts.current.interactive || reduceMotion.matches) return
       const rect = host.getBoundingClientRect()
-      addRing(e.clientX - rect.left, e.clientY - rect.top, performance.now())
+      const { clientX, clientY } = e as PointerEvent
+      addRing(clientX - rect.left, clientY - rect.top, performance.now())
       wake()
     }
     const onVisibility = () => {
       if (!document.hidden) wake()
     }
+
+    // Taps reach a background layer through the window; a normal inline field
+    // simply listens on itself.
+    const listenTarget: HTMLElement | Window =
+      opts.current.listenOn === "window" ? window : host
 
     const ro = new ResizeObserver(resize)
     const io = new IntersectionObserver(
@@ -246,7 +259,7 @@ export function SonarGrid({
     ro.observe(host)
     io.observe(host)
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "style", "data-theme"] })
-    host.addEventListener("pointerdown", onDown)
+    listenTarget.addEventListener("pointerdown", onDown)
     document.addEventListener("visibilitychange", onVisibility)
     reduceMotion.addEventListener("change", wake)
     wake()
@@ -255,7 +268,7 @@ export function SonarGrid({
       ro.disconnect()
       io.disconnect()
       mo.disconnect()
-      host.removeEventListener("pointerdown", onDown)
+      listenTarget.removeEventListener("pointerdown", onDown)
       document.removeEventListener("visibilitychange", onVisibility)
       reduceMotion.removeEventListener("change", wake)
       cancelAnimationFrame(raf)
@@ -267,13 +280,17 @@ export function SonarGrid({
   // Prop changes while the loop is asleep still repaint immediately.
   React.useEffect(() => {
     refreshRef.current()
-  }, [spacing, dotRadius, baseOpacity, color, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, pingArea])
+  }, [spacing, dotRadius, baseOpacity, color, pingEvery, speed, ringWidth, amplitude, interactive, listenOn, maxRings, pingArea])
 
   return (
     <div
       ref={setHost}
       data-slot="sonar-grid"
-      className={cn("relative isolate overflow-hidden", interactive && "cursor-crosshair", className)}
+      className={cn(
+        "relative isolate overflow-hidden",
+        interactive && listenOn === "self" && "cursor-crosshair",
+        className,
+      )}
       {...rest}
     >
       <canvas

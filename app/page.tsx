@@ -1,3 +1,5 @@
+import { ScrollProgress } from "@/components/ui/scroll-progress"
+import { SonarField } from "@/components/site/sonar-field"
 import { SiteHeader } from "@/components/site/site-header"
 import { Hero } from "@/components/site/hero"
 import { About } from "@/components/site/about"
@@ -9,6 +11,10 @@ import { SiteFooter } from "@/components/site/site-footer"
 export default function Page() {
   return (
     <>
+      {/* Full-page backdrop (tappable) + reading progress. */}
+      <SonarField />
+      <ScrollProgress className="bg-primary" />
+
       <SiteHeader />
       <main id="main" tabIndex={-1}>
         <Hero />

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
-import { MorphText } from "@/components/ui/morph-text"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { useLanguage } from "@/providers/language-provider"
 import { useTheme } from "next-themes"
 
@@ -54,9 +54,10 @@ export function SiteHeader() {
     <a
       key={item.href}
       href={item.href}
-      className="hidden rounded-lg px-3 py-2 font-mono text-xs tracking-wide text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+      className="hover:text-foreground text-muted-foreground hidden rounded-lg px-3 py-2 font-mono text-xs tracking-wide uppercase transition-colors hover:bg-accent md:inline-flex"
     >
-      <MorphText text={item.label} />
+      {/* Scrambles through HyperText only when the locale changes. */}
+      <HyperLabel text={item.label} className="py-0" duration={600} />
     </a>
   ))
 
@@ -72,7 +73,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a href="#top" className="inline-flex items-center gap-2 font-medium">
           <span aria-hidden="true" className="bg-primary size-2 rounded-full" />
-          <MorphText text={t.person.name} />
+          {t.person.name}
         </a>
 
         <nav aria-label="Primary" className="flex items-center gap-1">
@@ -82,7 +83,11 @@ export function SiteHeader() {
             <MonoButton onClick={toggle} aria-label={t.ui.langSwitchAria}>
               {/* Shows the language you would switch to. */}
               <span aria-hidden="true">
-                <MorphText text={locale === "en" ? "VI" : "EN"} className="min-w-6 text-center" />
+                <HyperLabel
+                  text={locale === "en" ? "VI" : "EN"}
+                  className="min-w-6 py-0 text-center"
+                  duration={400}
+                />
               </span>
             </MonoButton>
 
