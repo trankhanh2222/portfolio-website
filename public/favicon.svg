@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Khanh">
-  <rect width="64" height="64" rx="3" fill="#17223B" />
-  <!-- faint grid, the page's identity motif carried into the tab -->
-  <g stroke="#2A3550" stroke-width="1">
-    <path d="M0 16h64M0 32h64M0 48h64M16 0v64M32 0v64M48 0v64" />
-  </g>
-  <!-- red pen stroke for the K -->
-  <path d="M20 18v28M20 32l13-14M20 32l13 14" fill="none" stroke="#C7362A" stroke-width="4" stroke-linecap="square" />
-</svg>
