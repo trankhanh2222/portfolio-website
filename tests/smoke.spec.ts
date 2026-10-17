@@ -96,7 +96,9 @@ test.describe("portfolio smoke", () => {
 
     // Kinetic overlay menu: hidden while closed, opens on the trigger,
     // hands focus to the first link, and Escape closes it again.
-    const menuButton = page.getByRole("button", { name: "Open menu", exact: true })
+    // The trigger's accessible name flips with its state (Open ↔ Close), so
+    // hold a raw locator instead of a role-with-name one.
+    const menuButton = page.locator(".nav-close-btn")
     await menuButton.focus()
     await page.keyboard.press("Enter")
     await expect(menuButton).toHaveAttribute("aria-expanded", "true")

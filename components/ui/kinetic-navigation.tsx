@@ -34,11 +34,9 @@ export interface KineticNavigationProps {
   logo: React.ReactNode
   logoHref?: string
   links: KineticNavLink[]
-  /** Small controls (language/theme) between the hint and the menu button. */
+  /** Small controls (language/theme) to the left of the menu button. */
   controls?: React.ReactNode
-  /** Decorative affordance label next to the menu button. */
-  hint?: string
-  /** Menu button labels (the button swaps between the two). */
+  /** Accessibility label of the menu trigger (aria-label + aria-pressed pair). */
   openLabel: string
   closeLabel: string
   className?: string
@@ -57,7 +55,6 @@ export function KineticNavigation({
   logoHref = "#top",
   links,
   controls,
-  hint,
   openLabel,
   closeLabel,
   className,
@@ -124,6 +121,24 @@ export function KineticNavigation({
           item.removeEventListener("mouseleave", onLeave)
         })
       })
+
+      // Hamburger hover: the middle bar pinches and springs back.
+      const menuButton = container.querySelector(".nav-close-btn")
+      const middleBar = menuButton?.querySelector(".menu-bar:nth-child(2)")
+      if (menuButton && middleBar) {
+        const onBtnEnter = () => {
+          gsap.to(middleBar, { scaleX: 0.55, transformOrigin: "left center", duration: d(0.3), ease: "power2.out", overwrite: "auto" })
+        }
+        const onBtnLeave = () => {
+          gsap.to(middleBar, { scaleX: 1, duration: d(0.45), ease: "power3.out", overwrite: "auto" })
+        }
+        menuButton.addEventListener("mouseenter", onBtnEnter)
+        menuButton.addEventListener("mouseleave", onBtnLeave)
+        cleanups.push(() => {
+          menuButton.removeEventListener("mouseenter", onBtnEnter)
+          menuButton.removeEventListener("mouseleave", onBtnLeave)
+        })
+      }
     }, containerRef)
 
     return () => {
@@ -150,8 +165,8 @@ export function KineticNavigation({
       const menuLinks = container.querySelectorAll(".nav-link")
       const fadeTargets = container.querySelectorAll("[data-menu-fade]")
       const menuButton = container.querySelector(".nav-close-btn")
-      const menuButtonTexts = menuButton?.querySelectorAll(".menu-button-text p")
-      const menuButtonIcon = menuButton?.querySelector(".menu-button-icon")
+      const bars = menuButton ? Array.from(menuButton.querySelectorAll<HTMLElement>(".menu-bar")) : []
+      const [topBar = null, midBar = null, bottomBar = null] = bars
       if (!navWrap || !menu) return
 
       const tl = gsap.timeline()
@@ -159,14 +174,22 @@ export function KineticNavigation({
         navWrap.setAttribute("data-nav", "open")
         tl.set(navWrap, { display: "block" })
           .set(menu, { xPercent: 0 }, "<")
-          .fromTo(menuButtonTexts ?? [], { yPercent: 0 }, { yPercent: -100, stagger: d(0.08), duration: d(0.25) })
-          .fromTo(menuButtonIcon ?? [], { rotate: 0 }, { rotate: 315, duration: d(0.5) }, "<")
+          // Hamburger morphs into an ✕, bar by bar.
+          .fromTo(topBar ?? [], { y: 0, rotate: 0 }, { y: 6.5, rotate: 45, duration: d(0.45), ease: "back.out(1.6)" }, "<")
+          .fromTo(bottomBar ?? [], { y: 0, rotate: 0 }, { y: -6.5, rotate: -45, duration: d(0.45), ease: "back.out(1.6)" }, "<0.06")
+          .to(midBar ?? [], { opacity: 0, scaleX: 0.2, duration: d(0.3), ease: "power2.in" }, "<")
+          // Full-screen wipe: three panels peel right→left with a slight skew.
           .fromTo(overlay, { autoAlpha: 0 }, { autoAlpha: 1, duration: d(0.3) }, "<")
-          .fromTo(bgPanels, { xPercent: 101 }, { xPercent: 0, stagger: d(0.12), duration: d(0.575) }, "<")
+          .fromTo(
+            bgPanels,
+            { xPercent: 101, skewX: -6, transformOrigin: "right center" },
+            { xPercent: 0, skewX: 0, stagger: d(0.12), duration: d(0.6) },
+            "<",
+          )
           .fromTo(
             menuLinks,
             { yPercent: 140, rotate: 10 },
-            { yPercent: 0, rotate: 0, stagger: d(0.05), duration: d(0.6) },
+            { yPercent: 0, rotate: 0, stagger: d(0.07), duration: d(0.6) },
             "<+=0.35",
           )
 
@@ -187,19 +210,28 @@ export function KineticNavigation({
         navWrap.setAttribute("data-nav", "closed")
         tl.to(overlay, { autoAlpha: 0, duration: d(0.3) })
           .to(menu, { xPercent: 120, duration: d(0.5) }, "<")
-          .to(menuButtonTexts ?? [], { yPercent: 0, duration: d(0.25) }, "<")
-          .to(menuButtonIcon ?? [], { rotate: 0, duration: d(0.5) }, "<")
-          .set(navWrap, { display: "none" })
-        // Initial mount also runs this branch — only refocus after a real open.
+        // ✕ morphs back into the hamburger. Guarded by wasOpenRef so the
+        // initial closed-mount run (no inline state yet) never tweens.
         if (wasOpenRef.current) {
           wasOpenRef.current = false
+          if (topBar) {
+            tl.to(topBar, { y: 0, rotate: 0, duration: d(0.4), ease: "power2.out" }, "<")
+              .to(bottomBar ?? [], { y: 0, rotate: 0, duration: d(0.4), ease: "power2.out" }, "<")
+              .to(midBar ?? [], { opacity: 1, scaleX: 1, duration: d(0.35), ease: "power2.out" }, "<0.08")
+          }
+          // Return keyboard focus to the trigger once the panel is gone.
           tl.call(() => menuButton instanceof HTMLElement && menuButton.focus())
         }
+        tl.set(navWrap, { display: "none" })
       }
     }, containerRef)
 
     return () => {
-      ctx.revert()
+      // Deliberately NOT ctx.revert(): reverting would snap every inline
+      // style (panel position, bar morph) back to its pre-animation state
+      // before the close timeline runs, making the close invisible. Killing
+      // keeps live inline state for the next run and drops only the tweens.
+      ctx.kill()
     }
   }, [isMenuOpen])
 
@@ -228,18 +260,6 @@ export function KineticNavigation({
                 {logo}
               </a>
               <div className="nav-row__right">
-                {/* Decorative clickable hint mirroring the template; the real
-                    accessible trigger is the button right next to it. */}
-                {hint && (
-                  <div
-                    className="nav-toggle-label"
-                    aria-hidden="true"
-                    onClick={() => setIsMenuOpen(true)}
-                  >
-                    <span className="toggle-text">{hint}</span>
-                  </div>
-                )}
-
                 {controls}
 
                 <button
@@ -248,28 +268,14 @@ export function KineticNavigation({
                   onClick={() => setIsMenuOpen((open) => !open)}
                   aria-expanded={isMenuOpen}
                   aria-controls="kinetic-menu"
-                  aria-label={openLabel}
+                  aria-label={isMenuOpen ? closeLabel : openLabel}
                 >
-                  <div className="menu-button-text">
-                    <p className="p-large">{openLabel}</p>
-                    <p className="p-large">{closeLabel}</p>
-                  </div>
-                  <div className="icon-wrap">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="100%"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className="menu-button-icon"
-                    >
-                      <path d="M7.33333 16L7.33333 -3.2055e-07L8.66667 -3.78832e-07L8.66667 16L7.33333 16Z" fill="currentColor" />
-                      <path d="M16 8.66667L-2.62269e-07 8.66667L-3.78832e-07 7.33333L16 7.33333L16 8.66667Z" fill="currentColor" />
-                      <path d="M6 7.33333L7.33333 7.33333L7.33333 6C7.33333 6.73637 6.73638 7.33333 6 7.33333Z" fill="currentColor" />
-                      <path d="M10 7.33333L8.66667 7.33333L8.66667 6C8.66667 6.73638 9.26362 7.33333 10 7.33333Z" fill="currentColor" />
-                      <path d="M6 8.66667L7.33333 8.66667L7.33333 10C7.33333 9.26362 6.73638 8.66667 6 8.66667Z" fill="currentColor" />
-                      <path d="M10 8.66667L8.66667 8.66667L8.66667 10C8.66667 9.26362 9.26362 8.66667 10 8.66667Z" fill="currentColor" />
-                    </svg>
-                  </div>
+                  {/* Three bars morph into an ✕ when the menu opens. */}
+                  <span className="menu-bars" aria-hidden="true">
+                    <span className="menu-bar" />
+                    <span className="menu-bar" />
+                    <span className="menu-bar" />
+                  </span>
                 </button>
               </div>
             </nav>
@@ -331,6 +337,9 @@ export function KineticNavigation({
                 {links.map((link, i) => (
                   <li key={link.href} className="menu-list-item" data-shape={String((i % MAX_SHAPES) + 1)}>
                     <a href={link.href} className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                      <span className="nav-link-num" aria-hidden="true" data-menu-fade>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
                       <p className="nav-link-text" data-menu-fade>
                         {link.label}
                       </p>
