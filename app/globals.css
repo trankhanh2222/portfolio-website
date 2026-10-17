@@ -1,0 +1,425 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Sora Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-heading: "Sora Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+  "Signal deck" palette.
+  One accent — signal orange #F9531F — carries the sonar wavefront, the
+  focus ring and each section's small mark. Everything else stays neutral.
+  Orange surfaces carry near-black ink (≈6.3:1), white on orange fails AA
+  for small text, so --primary-foreground stays dark in both themes.
+*/
+:root {
+  --background: #f4f5f2;
+  --foreground: #171a21;
+  --card: #ffffff;
+  --card-foreground: #171a21;
+  --popover: #ffffff;
+  --popover-foreground: #171a21;
+  --primary: #f9531f;
+  --primary-foreground: #0c0c0c;
+  --secondary: #ffffff;
+  --secondary-foreground: #171a21;
+  --muted: #eceeE9;
+  --muted-foreground: #59606e;
+  --accent: #f7ede8;
+  --accent-foreground: #171a21;
+  --destructive: #c7362a;
+  --border: #e1e5de;
+  --input: #e1e5de;
+  --ring: #f9531f;
+  --radius: 0.375rem;
+}
+
+.dark {
+  --background: #0a0c10;
+  --foreground: #e8eaf0;
+  --card: #12151b;
+  --card-foreground: #e8eaf0;
+  --popover: #12151b;
+  --popover-foreground: #e8eaf0;
+  --primary: #f9531f;
+  --primary-foreground: #0c0c0c;
+  --secondary: #171c24;
+  --secondary-foreground: #e8eaf0;
+  --muted: #151a22;
+  --muted-foreground: #99a1b0;
+  --accent: #1a202a;
+  --accent-foreground: #e8eaf0;
+  --destructive: #ff6b5a;
+  --border: #232833;
+  --input: #2a303c;
+  --ring: #f9531f;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ============================================================
+   Kinetic navigation — class contract for the GSAP fullscreen
+   menu (components/ui/kinetic-navigation.tsx). The JS only
+   animates; every static style lives here, on system tokens.
+   ============================================================ */
+
+.site-header-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+}
+
+.header {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.container.is--full {
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.5rem;
+  gap: 1rem;
+}
+
+.nav-logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.nav-row__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Menu trigger — three bars morph into an ✕ via GSAP. */
+.nav-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--background) 60%, transparent);
+  color: var(--foreground);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.nav-close-btn:hover {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+}
+.menu-bars {
+  position: relative;
+  display: block;
+  width: 1.375rem;
+  height: 0.9375rem;
+  color: var(--foreground);
+}
+.menu-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  will-change: transform, opacity;
+}
+.menu-bar:nth-child(1) {
+  top: 0;
+}
+.menu-bar:nth-child(2) {
+  top: calc(50% - 1px);
+}
+.menu-bar:nth-child(3) {
+  top: calc(100% - 2px);
+}
+
+.fullscreen-menu-container {
+  /* invisible stage; geometry lives on its children */
+}
+
+.nav-overlay-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--background) 45%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Full-screen menu: covers the whole viewport; GSAP slides it (xPercent 0 ⇄ 120). */
+.menu-content {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.menu-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Three opaque panels peel in with stagger; plain layer is the topmost surface. */
+.backdrop-layer {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+}
+.backdrop-layer.first {
+  background: color-mix(in srgb, var(--primary) 16%, var(--background));
+}
+.backdrop-layer.second {
+  background: color-mix(in srgb, var(--muted-foreground) 9%, var(--background));
+}
+
+/* Hover-reactive ink geometry, anchored to the right end of each row
+   (inside .nav-link, clipped by the row's overflow). The GSAP layer only
+   animates; shape fills are the ink that sits on orange surfaces. */
+.row-shapes {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(9rem, 18vw, 15rem);
+  height: 100%;
+  pointer-events: none;
+}
+.row-shapes .shape-element {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.menu-content-wrapper {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 5.5rem clamp(2rem, 7vw, 4rem) 3rem;
+}
+
+/* Link rail on the left, contact shortcuts on the right; the pair stacks
+   under 900px so the meta fills the dead zone at the bottom of menu. */
+.menu-layout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  flex: 1 1 auto;
+  max-width: 44rem;
+}
+
+.menu-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  flex: 0 0 auto;
+  width: clamp(15rem, 22vw, 20rem);
+  margin-left: auto;
+}
+.menu-meta-label {
+  margin: 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.menu-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 55%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--foreground);
+}
+.menu-meta-row a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.menu-meta-row a:hover {
+  color: var(--primary);
+}
+.menu-meta-credit {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+@media (max-width: 900px) {
+  .menu-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2.25rem;
+  }
+  .menu-list {
+    max-width: none;
+  }
+  .menu-meta {
+    width: 100%;
+    max-width: 24rem;
+    margin-left: 0;
+    gap: 1.35rem;
+  }
+}
+
+.menu-list-item {
+  overflow: hidden; /* GSAP raises links from yPercent 140 inside their row */
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding: 0.7rem 0.25rem 0.7rem 0;
+  color: var(--foreground);
+  text-decoration: none;
+}
+.nav-link-num {
+  position: relative;
+  z-index: 1;
+  transition: color 0.22s;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--muted-foreground);
+  min-width: 2ch;
+}
+.nav-link-text {
+  position: relative;
+  z-index: 1;
+  transition: color 0.22s;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4.2vw, 2.4rem);
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+/* Solid brand hit: the sweep lands as a full primary band and the text
+   flips to the ink that lives on orange surfaces, in either theme. */
+.nav-link-hover-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s cubic-bezier(0.65, 0.05, 0, 1);
+  pointer-events: none;
+}
+.nav-link:hover .nav-link-hover-bg,
+.nav-link:focus-visible .nav-link-hover-bg {
+  transform: scaleX(1);
+}
+.nav-link:hover .nav-link-text,
+.nav-link:focus-visible .nav-link-text {
+  color: var(--primary-foreground);
+}
+.nav-link:hover .nav-link-num,
+.nav-link:focus-visible .nav-link-num {
+  color: color-mix(in srgb, var(--primary-foreground) 62%, transparent);
+}
+.nav-link:focus-visible {
+  outline: none;
+}

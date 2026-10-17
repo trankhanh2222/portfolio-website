@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-
-# Sitemap placeholder: add the deployed URL when the site has one.
-# Sitemap: [ SITE URL ]/sitemap.xml

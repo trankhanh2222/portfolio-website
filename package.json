@@ -1,30 +1,40 @@
 {
   "name": "khanh-portfolio",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Personal portfolio for Khanh: competitive programming, C++, AI experiments, software development.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --port 4173",
-    "test:e2e": "playwright test",
-    "test:a11y": "playwright test tests/a11y.spec.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "playwright test"
   },
   "dependencies": {
-    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/sora": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@phosphor-icons/react": "^2.1.10",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.59.0",
+    "motion": "^14.3.0",
+    "next": "16.4.2",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.8.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "shadcn": "^4.22.0",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.2",
-    "@playwright/test": "^1.56.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "sharp": "^0.35.5",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.1"
-  }
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "description": "Personal portfolio: sonar-grid hero, bilingual EN/VI, signal-orange identity."
 }
