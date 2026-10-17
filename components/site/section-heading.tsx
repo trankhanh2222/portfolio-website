@@ -30,7 +30,6 @@ export function SectionHeading({
           text={title}
           className="py-0 pb-0.5 align-baseline"
           duration={900}
-          startOnView
         />
       </h2>
     </div>

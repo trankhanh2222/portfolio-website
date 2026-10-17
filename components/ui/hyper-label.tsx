@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils"
 /**
  * HyperLabel — Magic UI's HyperText, driven by a value instead of a mount.
  *
- * The pure HyperText scrambles once when it mounts (or when hovered). For a
- * locale switch we want the opposite: the first render shows plain text, and
- * every later change of `text` re-runs the scramble exactly once. A `key`
- * remount per change achieves that, and `prefers-reduced-motion` keeps the
- * plain swap.
+ * The first render shows plain text, and every later change of `text`
+ * (a locale switch) re-runs the scramble exactly once — immediately, no
+ * matter where the label is on the page. Off-screen labels scramble
+ * silently at the moment of the click and are settled by the time the
+ * user scrolls there; nothing ever animates "late on scroll". A `key`
+ * remount per change drives the replay, and `prefers-reduced-motion`
+ * keeps the plain swap.
  */
 export interface HyperLabelProps {
   text: string
@@ -21,8 +23,6 @@ export interface HyperLabelProps {
   duration?: number
   /** Extra delay before the scramble starts, in ms. */
   delay?: number
-  /** Wait until scrolled into view before scrambling (default: start at once). */
-  startOnView?: boolean
   animateOnHover?: boolean
 }
 
@@ -31,7 +31,6 @@ export function HyperLabel({
   className,
   duration,
   delay,
-  startOnView = false,
   animateOnHover = false,
 }: HyperLabelProps) {
   const [generation, setGeneration] = useState(0)
@@ -57,7 +56,7 @@ export function HyperLabel({
       className={className}
       duration={duration}
       delay={delay}
-      startOnView={startOnView}
+      startOnView={false}
       animateOnHover={animateOnHover}
     >
       {text}
