@@ -1,0 +1,85 @@
+# Khanh — Portfolio
+
+Personal portfolio for **Khanh**: student developer — C++, competitive programming, small software, and AI experiments.
+
+One static page, two languages (EN/VI), dark-first with a signal-orange identity.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui** (radix preset) — Button, Badge, Separator
+- **motion** (Framer Motion) for reveals, **next-themes** for the dark/light switch
+- Self-hosted fonts via Fontsource: Sora Variable (sans) + IBM Plex Mono (mono)
+- **Playwright** for smoke tests
+
+## Signature pieces
+
+| Piece | What it does |
+| --- | --- |
+| `components/ui/sonar-grid.tsx` | Canvas dot field behind the hero. Idles with an ambient "ping" every few seconds; tap anywhere to send your own expanding ring. Theme-aware (reads `text-primary`), pauses off-screen and in hidden tabs, respects `prefers-reduced-motion`. Vendored from [21st.dev](https://21st.dev) and kept upstream-faithful. |
+| `components/ui/shutter-glyph-footer.tsx` | Signal-orange footer with the name drawn as a giant SVG display alphabet (no font — pure geometry). One letter is swapped for a "shutter" whose three blades track your pointer; letters flip on click and scramble on hover. Adapted from the same source: the newsletter signup was removed and the first column now carries a contact CTA; links without an `href` render as honest pending placeholders. (The display alphabet covers A–Z only, so the wordmark is spelled without diacritics.) |
+| `components/ui/morph-text.tsx` | Custom one-shot text morph. Magic UI's `morphing-text` loops a `texts` array forever; this wrapper keeps the same blur math (`#threshold` SVG filter) but plays **exactly one morph** whenever the `text` prop changes — designed to animate the EN↔VI swap everywhere a label appears. Falls back to an instant swap under `prefers-reduced-motion`; screen readers only hear the final label. |
+| `components/ui/animated-theme-toggler.tsx` | Magic UI theme toggle (circle variant) driving `next-themes` with a View Transitions circular wipe. |
+
+## Runs like this
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build
+npm run start      # serve the build
+npm run lint
+npx playwright test
+```
+
+## Content lives in one file: `content/site.ts`
+
+Everything the page says (both languages) is data in `content/site.ts`, typed so the
+Vietnamese object must match the English one key-for-key (`const vi: Content`).
+
+### The honesty rule
+
+Nothing is invented. Facts the owner has not supplied are `null` in the data,
+paired with an explicit placeholder string (`ph`), and the UI renders a visible
+pending token instead of fake copy:
+
+```ts
+email: null,          emailPh: "[ email address ]",
+links: [{ name: "GitHub", href: null, ph: "[ GitHub URL ]" }, …]
+```
+
+To make the site "real", replace the `null`s in `content/site.ts`:
+
+- `contact.email` → enables the copy-to-clipboard row
+- `contact.links[*].href` → turns pending rows into real links (same for `footer.socials`, `footer.legal`)
+- `about.facts[*].value` → location / status lines
+- `experience.items[*]` → real timeline rows (a `[ empty slot ]` chip disappears automatically)
+- `meta.title` / `meta.description` → page metadata
+
+Language choice persists in `localStorage` (`portfolio-locale`); the theme in
+`localStorage` via next-themes (`theme`). Server-rendered defaults are EN + dark.
+
+## Structure
+
+```
+app/                    layout (providers, fonts, metadata), page, globals.css (tokens), icon.svg
+components/site/        Header, Hero, About, Skills, Experience, Contact, SiteFooter + primitives
+components/ui/          shadcn primitives + sonar-grid, shutter-glyph-footer, morph-text, morphing-text (stock), theme toggler, threshold-filter
+content/site.ts         all EN/VI copy and data (single source of truth)
+providers/              theme-provider (next-themes), language-provider (locale + `t`)
+tests/smoke.spec.ts     Playwright smoke suite (structure, language, theme, keyboard)
+```
+
+## Implementation notes (Next 16 specific)
+
+- **Cache Components is enabled**, so `new Date()` cannot run during prerender —
+  the footer resolves the copyright year in a `useEffect` instead.
+- `LayoutProps<"/">` is used for the root layout typing.
+- The theme toggler is used in **controlled mode** and only passes `theme`
+  after hydration (via a `mounted` gate): the server renders the uncontrolled
+  default; passing `resolvedTheme` during hydration would flip the icon and
+  raise a React #418 hydration error.
+- Language restore also happens in a mount effect (same pattern as
+  next-themes): the EN default renders first, the stored VI choice applies
+  right after mount — and the label morph makes the correction read as a
+  transition, not a flash.
