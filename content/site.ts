@@ -163,6 +163,11 @@ const en = {
     ],
   },
 
+  menu: {
+    touch: "Direct line",
+    elsewhere: "Elsewhere",
+  },
+
   footer: {
     since: 2026,
     company: "Khanh",
@@ -318,6 +323,11 @@ const vi: Content = {
       { name: "Codeforces", href: null, ph: "[ Codeforces URL ]" },
       { name: "LeetCode", href: null, ph: "[ LeetCode URL ]" },
     ],
+  },
+
+  menu: {
+    touch: "Kênh trực tiếp",
+    elsewhere: "Ở nơi khác",
   },
 
   footer: {

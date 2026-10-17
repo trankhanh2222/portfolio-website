@@ -36,6 +36,12 @@ export interface KineticNavigationProps {
   links: KineticNavLink[]
   /** Small controls (language/theme) to the left of the menu button. */
   controls?: React.ReactNode
+  /**
+   * Secondary column of the fullscreen menu (contact shortcuts, credit) —
+   * fills the right half on wide screens and stacks under the links below
+   * the breakpoint. Animated with the same data-menu-fade ladder.
+   */
+  meta?: React.ReactNode
   /** Accessibility label of the menu trigger (aria-label + aria-pressed pair). */
   openLabel: string
   closeLabel: string
@@ -47,7 +53,40 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(CustomEase)
 }
 
-const MAX_SHAPES = 5
+// Ink geometry anchored to the right end of a hovered row. Three
+// compositions cycle across the rows; fills are the same near-black ink
+// that sits on orange surfaces, so they read on the solid hover band in
+// either theme.
+const SHAPES = 3
+
+function RowShapes({ variant }: { variant: number }) {
+  return (
+    <svg
+      className={`row-shapes row-shapes-${variant}`}
+      viewBox="0 0 240 72"
+      preserveAspectRatio="xMaxYMid meet"
+      aria-hidden="true"
+    >
+      {variant === 0 ? (
+        <>
+          <polygon className="shape-element" points="116,72 240,8 240,72" fill="rgba(12,12,12,0.9)" />
+          <polygon className="shape-element" points="30,24 42,36 30,48 18,36" fill="rgba(12,12,12,0.32)" />
+        </>
+      ) : variant === 1 ? (
+        <>
+          <polygon className="shape-element" points="148,72 186,6 216,6 178,72" fill="rgba(12,12,12,0.88)" />
+          <polygon className="shape-element" points="204,72 232,20 240,20 240,72" fill="rgba(12,12,12,0.3)" />
+        </>
+      ) : (
+        <>
+          <polygon className="shape-element" points="178,72 205,4 224,72" fill="rgba(12,12,12,0.9)" />
+          <polygon className="shape-element" points="232,72 240,34 240,72" fill="rgba(12,12,12,0.34)" />
+          <polygon className="shape-element" points="26,30 74,30 74,38 26,38" fill="rgba(12,12,12,0.26)" />
+        </>
+      )}
+    </svg>
+  )
+}
 
 export function KineticNavigation({
   preNav,
@@ -55,6 +94,7 @@ export function KineticNavigation({
   logoHref = "#top",
   links,
   controls,
+  meta,
   openLabel,
   closeLabel,
   className,
@@ -85,31 +125,26 @@ export function KineticNavigation({
       const container = containerRef.current
       if (!container) return
 
-      const menuItems = container.querySelectorAll(".menu-list-item[data-shape]")
-      const shapesContainer = container.querySelector(".ambient-background-shapes")
+      // Hover-reactive ink geometry lives INSIDE each menu row (right end) —
+      // one composition cycles across rows instead of scattered blobs.
+      const menuItems = container.querySelectorAll(".menu-list-item")
 
       menuItems.forEach((item) => {
-        const shapeIndex = item.getAttribute("data-shape")
-        const shape = shapesContainer?.querySelector(`.bg-shape-${shapeIndex}`)
-        if (!shape) return
-        const shapeEls = shape.querySelectorAll(".shape-element")
+        const shapeEls = item.querySelectorAll(".shape-element")
 
         const onEnter = () => {
-          shapesContainer?.querySelectorAll(".bg-shape").forEach((s) => s.classList.remove("active"))
-          shape.classList.add("active")
           gsap.fromTo(
             shapeEls,
-            { scale: 0.5, opacity: 0, rotation: -10 },
-            { scale: 1, opacity: 1, rotation: 0, duration: d(0.6), stagger: d(0.08), ease: "back.out(1.7)", overwrite: "auto" },
+            { scale: 0.55, opacity: 0, rotation: -8, transformOrigin: "72% 85%" },
+            { scale: 1, opacity: 1, rotation: 0, duration: d(0.55), stagger: d(0.07), ease: "back.out(1.7)", overwrite: "auto" },
           )
         }
         const onLeave = () => {
           gsap.to(shapeEls, {
             scale: 0.8,
             opacity: 0,
-            duration: d(0.3),
+            duration: d(0.28),
             ease: "power2.in",
-            onComplete: () => shape.classList.remove("active"),
             overwrite: "auto",
           })
         }
@@ -174,6 +209,9 @@ export function KineticNavigation({
         navWrap.setAttribute("data-nav", "open")
         tl.set(navWrap, { display: "block" })
           .set(menu, { xPercent: 0 }, "<")
+          // Reset any shape left mid-flight by a fast close, so a reopened
+          // menu starts clean.
+          .set(container.querySelectorAll(".row-shapes .shape-element"), { opacity: 0 }, "<")
           // Hamburger morphs into an ✕, bar by bar.
           .fromTo(topBar ?? [], { y: 0, rotate: 0 }, { y: 6.5, rotate: 45, duration: d(0.45), ease: "back.out(1.6)" }, "<")
           .fromTo(bottomBar ?? [], { y: 0, rotate: 0 }, { y: -6.5, rotate: -45, duration: d(0.45), ease: "back.out(1.6)" }, "<0.06")
@@ -301,63 +339,28 @@ export function KineticNavigation({
               <div className="backdrop-layer first" />
               <div className="backdrop-layer second" />
               <div className="backdrop-layer" />
-
-              {/* Abstract shapes recolored to the signal-orange palette. */}
-              <div className="ambient-background-shapes">
-                <svg className="bg-shape bg-shape-1" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-                  <circle className="shape-element" cx="80" cy="120" r="40" fill="rgba(249,83,31,0.14)" />
-                  <circle className="shape-element" cx="300" cy="80" r="60" fill="rgba(249,83,31,0.10)" />
-                  <circle className="shape-element" cx="200" cy="300" r="80" fill="rgba(255,138,90,0.09)" />
-                  <circle className="shape-element" cx="350" cy="280" r="30" fill="rgba(249,83,31,0.14)" />
-                </svg>
-                <svg className="bg-shape bg-shape-2" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-                  <path className="shape-element" d="M0 200 Q100 100, 200 200 T 400 200" stroke="rgba(249,83,31,0.20)" strokeWidth="60" fill="none" />
-                  <path className="shape-element" d="M0 280 Q100 180, 200 280 T 400 280" stroke="rgba(255,138,90,0.14)" strokeWidth="40" fill="none" />
-                </svg>
-                <svg className="bg-shape bg-shape-3" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-                  <circle className="shape-element" cx="50" cy="50" r="8" fill="rgba(249,83,31,0.30)" />
-                  <circle className="shape-element" cx="150" cy="50" r="8" fill="rgba(249,83,31,0.24)" />
-                  <circle className="shape-element" cx="250" cy="50" r="8" fill="rgba(255,138,90,0.28)" />
-                  <circle className="shape-element" cx="350" cy="50" r="8" fill="rgba(249,83,31,0.22)" />
-                  <circle className="shape-element" cx="100" cy="150" r="12" fill="rgba(249,83,31,0.20)" />
-                  <circle className="shape-element" cx="200" cy="150" r="12" fill="rgba(255,138,90,0.22)" />
-                  <circle className="shape-element" cx="300" cy="150" r="12" fill="rgba(249,83,31,0.18)" />
-                  <circle className="shape-element" cx="50" cy="250" r="10" fill="rgba(255,138,90,0.26)" />
-                  <circle className="shape-element" cx="150" cy="250" r="10" fill="rgba(249,83,31,0.26)" />
-                  <circle className="shape-element" cx="250" cy="250" r="10" fill="rgba(249,83,31,0.24)" />
-                  <circle className="shape-element" cx="350" cy="250" r="10" fill="rgba(255,138,90,0.24)" />
-                  <circle className="shape-element" cx="100" cy="350" r="6" fill="rgba(249,83,31,0.30)" />
-                  <circle className="shape-element" cx="200" cy="350" r="6" fill="rgba(249,83,31,0.24)" />
-                  <circle className="shape-element" cx="300" cy="350" r="6" fill="rgba(255,138,90,0.28)" />
-                </svg>
-                <svg className="bg-shape bg-shape-4" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-                  <path className="shape-element" d="M100 100 Q150 50, 200 100 Q250 150, 200 200 Q150 250, 100 200 Q50 150, 100 100" fill="rgba(249,83,31,0.12)" />
-                  <path className="shape-element" d="M250 200 Q300 150, 350 200 Q400 250, 350 300 Q300 350, 250 300 Q200 250, 250 200" fill="rgba(255,138,90,0.09)" />
-                </svg>
-                <svg className="bg-shape bg-shape-5" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-                  <line className="shape-element" x1="0" y1="100" x2="300" y2="400" stroke="rgba(249,83,31,0.16)" strokeWidth="30" />
-                  <line className="shape-element" x1="100" y1="0" x2="400" y2="300" stroke="rgba(249,83,31,0.12)" strokeWidth="25" />
-                  <line className="shape-element" x1="200" y1="0" x2="400" y2="200" stroke="rgba(255,138,90,0.10)" strokeWidth="20" />
-                </svg>
-              </div>
             </div>
 
             <div className="menu-content-wrapper">
-              <ul className="menu-list">
-                {links.map((link, i) => (
-                  <li key={link.href} className="menu-list-item" data-shape={String((i % MAX_SHAPES) + 1)}>
-                    <a href={link.href} className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                      <span className="nav-link-num" aria-hidden="true" data-menu-fade>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <p className="nav-link-text" data-menu-fade>
-                        {link.label}
-                      </p>
-                      <div className="nav-link-hover-bg" aria-hidden="true" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <div className="menu-layout">
+                <ul className="menu-list">
+                  {links.map((link, i) => (
+                    <li key={link.href} className="menu-list-item">
+                      <a href={link.href} className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                        <span className="nav-link-num" aria-hidden="true" data-menu-fade>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <p className="nav-link-text" data-menu-fade>
+                          {link.label}
+                        </p>
+                        <div className="nav-link-hover-bg" aria-hidden="true" />
+                        <RowShapes variant={i % SHAPES} />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                {meta ? <aside className="menu-meta">{meta}</aside> : null}
+              </div>
             </div>
           </nav>
         </div>
