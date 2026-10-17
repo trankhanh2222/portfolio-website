@@ -112,3 +112,257 @@
   animation: none;
   mix-blend-mode: normal;
 }
+
+/* ============================================================
+   Kinetic navigation — class contract for the GSAP fullscreen
+   menu (components/ui/kinetic-navigation.tsx). The JS only
+   animates; every static style lives here, on system tokens.
+   ============================================================ */
+
+.site-header-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+}
+
+.header {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.container.is--full {
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.5rem;
+  gap: 1rem;
+}
+
+.nav-logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.nav-row__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Decorative hint label next to the menu button. */
+.nav-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.toggle-text {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  transition: color 0.2s;
+}
+.nav-toggle-label:hover .toggle-text {
+  color: var(--foreground);
+}
+@media (max-width: 640px) {
+  .nav-toggle-label {
+    display: none;
+  }
+}
+
+/* Menu / Close trigger — the two stacked labels swap via GSAP. */
+.nav-close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.45rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--background) 60%, transparent);
+  color: var(--foreground);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.nav-close-btn:hover {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+}
+.menu-button-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 1.05em;
+  line-height: 1.05;
+}
+.menu-button-text p {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.menu-button-text :is(.p-large) {
+  /* template class kept; all styling sits on .menu-button-text p */
+}
+.icon-wrap {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--foreground);
+}
+.menu-button-icon {
+  display: block;
+}
+
+.fullscreen-menu-container {
+  /* invisible stage; geometry lives on its children */
+}
+
+.nav-overlay-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--background) 45%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Right-side panel that GSAP slides in (xPercent 0 ⇄ 120). */
+.menu-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: min(36rem, 100%);
+  overflow: hidden;
+}
+
+.menu-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-left: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+/* Three opaque panels peel in with stagger; plain layer is the topmost surface. */
+.backdrop-layer {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+}
+.backdrop-layer.first {
+  background: color-mix(in srgb, var(--primary) 16%, var(--background));
+}
+.backdrop-layer.second {
+  background: color-mix(in srgb, var(--muted-foreground) 9%, var(--background));
+}
+
+.ambient-background-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.bg-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.bg-shape.active {
+  opacity: 1;
+}
+.bg-shape .shape-element {
+  opacity: 0;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.menu-content-wrapper {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 4.25rem 2.5rem 3rem;
+}
+
+.menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  max-width: 30rem;
+}
+
+.menu-list-item {
+  overflow: hidden; /* GSAP raises links from yPercent 140 inside their row */
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 0.65rem 0.25rem 0.65rem 0;
+  color: var(--foreground);
+  text-decoration: none;
+}
+.nav-link-text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.4rem, 3.6vw, 2.1rem);
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+/* Swipe-in highlight on hover and keyboard focus. */
+.nav-link-hover-bg {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--primary) 13%, transparent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s cubic-bezier(0.65, 0.05, 0, 1);
+  pointer-events: none;
+}
+.nav-link:hover .nav-link-hover-bg,
+.nav-link:focus-visible .nav-link-hover-bg {
+  transform: scaleX(1);
+}
+.nav-link:focus-visible {
+  outline: none;
+}

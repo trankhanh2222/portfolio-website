@@ -17,12 +17,14 @@ One static page, two languages (EN/VI), dark-first with a signal-orange identity
 | Piece | What it does |
 | --- | --- |
 | `components/ui/sonar-grid.tsx` | Canvas dot field rendered as a **fixed full-page backdrop** (`components/site/sonar-field.tsx`). No ambient waves — the only way one appears is a tap anywhere (the layer listens on `window`, so text and buttons still receive events). Theme-aware, pauses in hidden tabs, respects `prefers-reduced-motion`. Vendored from [21st.dev](https://21st.dev); adapted: `listenOn` prop for the window-tap mode. |
+| `components/ui/kinetic-navigation.tsx` | **Kinetic fullscreen navigation** (GSAP + CustomEase, ported from the Sterling Gate pattern): right-side menu panel slides in over three staggered backdrop panels, links rise with a spin, every link is haunted by an abstract orange shape on hover. Replaces the classic inline nav — the bar carries logo + language/theme controls + a "Menu/Close" trigger whose labels swap and whose plus icon rotates 315°. Escape closes, body scroll locks, focus moves into the panel (and back) for keyboard users; reduced motion plays everything nearly instantly. The class contract's static styles live in `globals.css` under "Kinetic navigation". |
 | `components/ui/hyper-label.tsx` | Magic UI's **HyperText** driven by a value: labels render plain on first paint, then scramble into the new text exactly once per locale change (`key`-remount). Section headings additionally use `startOnView`, so they also scramble in when scrolled into view. Reduced motion swaps instantly. Note: HyperText uppercases the characters it settles on. |
 | `components/ui/shutter-glyph-footer.tsx` | Signal-orange footer with the name drawn as a giant SVG display alphabet (no font — pure geometry). One letter is swapped for a "shutter" whose three blades track your pointer; letters flip on click and scramble on hover. Adapted from the same source: the newsletter signup was removed and the first column now carries a contact CTA; links without an `href` render as honest pending placeholders. (The display alphabet covers A–Z only, so the wordmark is spelled without diacritics.) |
 | `components/ui/scroll-progress.tsx` | Magic UI reading-progress bar pinned to the top edge, recolored to the signal orange. |
 
 ## Animation ladder (basic → advanced)
 
+- **Kinetic nav choreography** — GSAP timelines (`CustomEase` 0.65/0.01/0.05/0.99): backdrop layers peel right→left with stagger, menu links rise spinning (yPercent 140 + rotate 10°), trigger labels swap and the plus icon rotates to an ✕; hovering a link summons its abstract shape (`back.out(1.7)`).
 - **Hero enter** — staggered rise + blur (`motion`), skipped under reduced motion.
 - **BlurFade reveals** — every section block fades up with a blur dissolve; paragraphs stagger by index.
 - **Rows stagger** — skill rows and contact links slide in one after another; the skill **tier meter** pops cell by cell.
@@ -73,7 +75,7 @@ Language choice persists in `localStorage` (`portfolio-locale`); the theme in
 ```
 app/                    layout (providers, fonts, metadata), page, globals.css (tokens), icon.svg
 components/site/        Header, Hero, About, Skills, Experience, Contact, SiteFooter + primitives
-components/ui/          shadcn primitives + sonar-grid, shutter-glyph-footer, hyper-text/hyper-label, blur-fade, scroll-progress, theme toggler
+components/ui/          shadcn primitives + sonar-grid, shutter-glyph-footer, kinetic-navigation (GSAP), hyper-text/hyper-label, blur-fade, scroll-progress, theme toggler
 content/site.ts         all EN/VI copy and data (single source of truth)
 providers/              theme-provider (next-themes), language-provider (locale + `t`)
 tests/smoke.spec.ts     Playwright smoke suite (structure, language, theme, keyboard)

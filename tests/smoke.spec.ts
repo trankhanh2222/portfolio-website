@@ -81,8 +81,8 @@ test.describe("portfolio smoke", () => {
     await expect(page.locator('a[href="#main"]')).toBeFocused()
     await page.keyboard.press("Enter")
 
-    // Next Tabs walk through the header controls (logo, nav, toggles) without
-    // getting trapped.
+    // Next Tabs walk through the header controls (logo, toggles, menu button)
+    // without getting trapped.
     const focusable: string[] = []
     for (let i = 0; i < 4; i++) {
       await page.keyboard.press("Tab")
@@ -93,5 +93,18 @@ test.describe("portfolio smoke", () => {
       focusable.push(el)
     }
     expect(focusable.filter((x) => x && x !== "(none)")).not.toHaveLength(0)
+
+    // Kinetic overlay menu: hidden while closed, opens on the trigger,
+    // hands focus to the first link, and Escape closes it again.
+    const menuButton = page.getByRole("button", { name: "Open menu", exact: true })
+    await menuButton.focus()
+    await page.keyboard.press("Enter")
+    await expect(menuButton).toHaveAttribute("aria-expanded", "true")
+    const firstLink = page.getByRole("link", { name: "About", exact: true })
+    await expect(firstLink).toBeVisible()
+    await expect(firstLink).toBeFocused()
+    await page.keyboard.press("Escape")
+    await expect(page.locator(".nav-overlay-wrapper")).toBeHidden()
+    await expect(firstLink).not.toBeVisible()
   })
 })
