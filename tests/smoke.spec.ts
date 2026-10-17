@@ -3,8 +3,10 @@ import { expect, test } from "@playwright/test"
 const LANG_TEXT = {
   // Heading labels render uppercase after a HyperText scramble (the scramble
   // transforms the actual characters), so VI/EN-after-change are uppercase.
-  about: { en: "About", vi: "GIỚI THIỆU" },
-  navvi: "KỸ NĂNG",
+  // preserveCase: the scramble settles back into the source case; CSS
+  // text-transform renders headings uppercase without touching textContent.
+  about: { en: "About", vi: "Giới thiệu" },
+  navvi: "Kỹ năng",
   contactPh: { en: "[ email address ]", vi: "[ địa chỉ email ]" },
   langAria: {
     en: "Switch to Vietnamese",
@@ -50,7 +52,7 @@ test.describe("portfolio smoke", () => {
 
     // Back to English for the rest of the suite.
     await page.getByRole("button", { name: LANG_TEXT.langAria.vi, exact: true }).click()
-    await expect(page.locator("#about h2")).toContainText("ABOUT", { timeout: 5_000 })
+    await expect(page.locator("#about h2")).toContainText(LANG_TEXT.about.en, { timeout: 5_000 })
     await page.getByRole("button", { name: LANG_TEXT.langAria.en, exact: true }).click()
     await expect(page.locator("#about h2")).toContainText(LANG_TEXT.about.vi, { timeout: 5_000 })
   })

@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react"
 import { BlurFade } from "@/components/ui/blur-fade"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
 import { cn } from "@/lib/utils"
@@ -31,7 +32,7 @@ function TierMeter({ label, level }: { label: string; level: number }) {
   return (
     <span className="inline-flex items-center gap-2" aria-label={`${label} ${level}/${STEPS}`}>
       <span aria-hidden="true" className="font-mono text-[0.6875rem] tracking-widest uppercase text-muted-foreground">
-        {label}
+        <HyperLabel text={label} className="py-0" duration={500} />
       </span>
       <span aria-hidden="true" className="inline-flex gap-1">
         {Array.from({ length: STEPS }).map((_, i) => (
@@ -66,7 +67,9 @@ export function Skills() {
 
         <div className="max-w-3xl">
           <BlurFade inView direction="up">
-            <p className="text-muted-foreground mb-6 text-sm">{skills.note}</p>
+            <p className="text-muted-foreground mb-6 text-sm">
+              <HyperLabel text={skills.note} className="py-0" duration={1000} />
+            </p>
           </BlurFade>
 
           <ul className="border-border border-b">
@@ -82,8 +85,12 @@ export function Skills() {
                   viewport={{ once: true, margin: "-40px" }}
                   className="border-border grid gap-2 border-t py-4 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_max-content] sm:items-baseline sm:gap-8"
                 >
-                  <span className="font-medium">{row.name}</span>
-                  <span className="text-muted-foreground text-sm">{row.detail}</span>
+                  <span className="font-medium">
+                    <HyperLabel text={row.name} className="py-0" duration={700} />
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    <HyperLabel text={row.detail} className="py-0" duration={1000} delay={140} />
+                  </span>
                   <span className="sm:justify-self-end">
                     <TierMeter label={tier.label} level={tier.level} />
                   </span>
