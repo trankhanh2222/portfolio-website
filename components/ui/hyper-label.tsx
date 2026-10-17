@@ -58,6 +58,7 @@ export function HyperLabel({
       delay={delay}
       startOnView={false}
       animateOnHover={animateOnHover}
+      preserveCase
     >
       {text}
     </HyperText>

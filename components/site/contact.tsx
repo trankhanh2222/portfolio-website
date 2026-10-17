@@ -4,6 +4,7 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import { ArrowUpRight, Check, Copy } from "lucide-react"
 import { BlurFade } from "@/components/ui/blur-fade"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { Pending } from "@/components/site/pending"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
@@ -50,7 +51,7 @@ export function Contact() {
         <div className="max-w-3xl">
           <BlurFade inView direction="up">
             <p className="text-muted-foreground max-w-xl text-pretty leading-relaxed">
-              {contact.lede}
+              <HyperLabel text={contact.lede} className="py-0" duration={1300} />
             </p>
           </BlurFade>
 
@@ -92,7 +93,9 @@ export function Contact() {
                     href={link.href}
                     className="group border-border hover:bg-accent flex items-center justify-between border-t transition-colors"
                   >
-                    <span>{link.name}</span>
+                    <span>
+                      <HyperLabel text={link.name} className="py-0" duration={700} />
+                    </span>
                     <ArrowUpRight
                       aria-hidden="true"
                       className="text-muted-foreground transition-colors group-hover:text-primary size-4"
@@ -109,7 +112,9 @@ export function Contact() {
                   viewport={{ once: true, margin: "-40px" }}
                   className="border-border flex items-center justify-between border-t px-1 py-3"
                 >
-                  <span className="text-muted-foreground">{link.name}</span>
+                  <span className="text-muted-foreground">
+                    <HyperLabel text={link.name} className="py-0" duration={700} />
+                  </span>
                   <Pending>{link.ph}</Pending>
                 </motion.li>
               ),

@@ -1,6 +1,7 @@
 "use client"
 
 import { motion, useReducedMotion } from "motion/react"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { ArrowRight } from "lucide-react"
 import { useLanguage } from "@/providers/language-provider"
 
@@ -32,7 +33,7 @@ export function Hero() {
             className="border-border text-muted-foreground mb-5 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-xs tracking-wide"
           >
             <span aria-hidden="true" className="bg-primary size-1.5 rounded-full" />
-            {t.person.eyebrow}
+            <HyperLabel text={t.person.eyebrow} className="py-0" duration={600} />
           </motion.p>
 
           <motion.h1
@@ -46,14 +47,14 @@ export function Hero() {
             {...enter(0.14, reduce)}
             className="font-mono text-sm tracking-wide text-muted-foreground"
           >
-            {t.person.role}
+            <HyperLabel text={t.person.role} className="py-0" duration={600} />
           </motion.p>
 
           <motion.p
             {...enter(0.2, reduce)}
             className="text-muted-foreground mt-6 max-w-xl text-base text-pretty sm:text-lg"
           >
-            {t.person.lede}
+            <HyperLabel text={t.person.lede} className="py-0" duration={1400} />
           </motion.p>
 
           <motion.div
@@ -64,7 +65,7 @@ export function Hero() {
               href={t.hero.ctaPrimary.href}
               className="group bg-primary text-primary-foreground focus-visible:ring-ring/50 inline-flex h-11 items-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-[transform,box-shadow] duration-200 outline-none hover:shadow-md focus-visible:ring-3 active:scale-[0.98]"
             >
-              {t.hero.ctaPrimary.label}
+              <HyperLabel text={t.hero.ctaPrimary.label} className="py-0" duration={600} />
               <ArrowRight
                 aria-hidden="true"
                 className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -74,7 +75,7 @@ export function Hero() {
               href={t.hero.ctaSecondary.href}
               className="border-border text-foreground hover:bg-accent focus-visible:ring-ring/50 inline-flex h-11 items-center rounded-lg border px-6 text-sm font-medium transition-[background-color,transform] duration-200 outline-none focus-visible:ring-3 active:scale-[0.98]"
             >
-              {t.hero.ctaSecondary.label}
+              <HyperLabel text={t.hero.ctaSecondary.label} className="py-0" duration={600} />
             </a>
           </motion.div>
         </div>
@@ -84,7 +85,7 @@ export function Hero() {
         {...enter(0.4, reduce)}
         className="text-muted-foreground pointer-events-none absolute inset-x-0 bottom-6 px-4 pb-[env(safe-area-inset-bottom)] text-center font-mono text-[0.625rem] tracking-[0.18em] whitespace-nowrap uppercase sm:text-[0.6875rem] sm:tracking-widest max-sm:overflow-hidden"
       >
-        {t.hero.hint}
+        <HyperLabel text={t.hero.hint} className="py-0" duration={700} />
       </motion.p>
     </section>
   )

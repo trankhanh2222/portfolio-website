@@ -1,6 +1,7 @@
 "use client"
 
 import { BlurFade } from "@/components/ui/blur-fade"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { Pending } from "@/components/site/pending"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
@@ -20,7 +21,9 @@ export function About() {
           <div className="space-y-5">
             {about.paragraphs.map((p, i) => (
               <BlurFade key={i} inView direction="up" delay={0.05 * i}>
-                <p className="text-pretty leading-relaxed text-muted-foreground">{p}</p>
+                <p className="text-pretty leading-relaxed text-muted-foreground">
+                  <HyperLabel text={p} className="py-0" duration={1300} delay={120 * i} />
+                </p>
               </BlurFade>
             ))}
           </div>
@@ -30,10 +33,10 @@ export function About() {
               {about.facts.map((fact) => (
                 <div key={fact.name} className="contents">
                   <dt className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                    {fact.name}
+                    <HyperLabel text={fact.name} className="py-0" duration={600} />
                   </dt>
                   <dd className="text-sm">
-                    {fact.value ? fact.value : <Pending>{fact.ph}</Pending>}
+                    {fact.value ? <HyperLabel text={fact.value} className="py-0" duration={900} /> : <Pending>{fact.ph}</Pending>}
                   </dd>
                 </div>
               ))}

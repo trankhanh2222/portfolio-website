@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { HyperLabel } from "@/components/ui/hyper-label"
 
 /**
  * A visible "content pending" token. Facts the owner has not supplied render
@@ -18,7 +19,11 @@ export function Pending({
         className,
       )}
     >
-      {children}
+      {typeof children === "string" ? (
+        <HyperLabel text={children} className="py-0" duration={700} />
+      ) : (
+        children
+      )}
     </span>
   )
 }

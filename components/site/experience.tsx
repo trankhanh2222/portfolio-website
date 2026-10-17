@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import { motion, useScroll, useSpring } from "motion/react"
 import { BlurFade } from "@/components/ui/blur-fade"
+import { HyperLabel } from "@/components/ui/hyper-label"
 import { Pending } from "@/components/site/pending"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
@@ -35,7 +36,9 @@ export function Experience() {
       <div className="mx-auto grid max-w-6xl gap-8 px-6 md:grid-cols-[210px_minmax(0,1fr)] md:gap-12">
         <BlurFade inView direction="up">
           <SectionHeading index={experience.index} title={experience.title} />
-          <p className="text-muted-foreground mt-3 max-w-48 text-sm">{experience.note}</p>
+          <p className="text-muted-foreground mt-3 max-w-48 text-sm">
+            <HyperLabel text={experience.note} className="py-0" duration={1000} />
+          </p>
         </BlurFade>
 
         <div className="relative max-w-3xl">
@@ -60,25 +63,39 @@ export function Experience() {
               >
                 <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
                   <div className="font-mono text-sm text-muted-foreground">
-                    {item.year ? <time>{item.year}</time> : <Pending>{item.yearPh}</Pending>}
+                    {item.year ? (
+                      <time>
+                        <HyperLabel text={item.year} className="py-0" duration={500} />
+                      </time>
+                    ) : (
+                      <Pending>{item.yearPh}</Pending>
+                    )}
                   </div>
                   <div>
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <h3 className="font-heading text-base font-semibold tracking-tight sm:text-lg">
-                        {item.title ? item.title : <Pending>{item.titlePh}</Pending>}
+                        {item.title ? (
+                          <HyperLabel text={item.title} className="py-0" duration={800} />
+                        ) : (
+                          <Pending>{item.titlePh}</Pending>
+                        )}
                       </h3>
                       {item.title === null && (
                         <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 font-mono text-[0.6875rem] tracking-wide">
-                          {ui.templateStamp}
+                          <HyperLabel text={ui.templateStamp} className="py-0" duration={600} />
                         </span>
                       )}
                     </div>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      {item.org ? item.org : <Pending>{item.orgPh}</Pending>}
+                      {item.org ? (
+                        <HyperLabel text={item.org} className="py-0" duration={700} />
+                      ) : (
+                        <Pending>{item.orgPh}</Pending>
+                      )}
                     </p>
                     <p className="leading-relaxed mt-2">
                       {item.detail ? (
-                        item.detail
+                        <HyperLabel text={item.detail} className="py-0" duration={1300} delay={80} />
                       ) : (
                         <Pending>{item.detailPh}</Pending>
                       )}
