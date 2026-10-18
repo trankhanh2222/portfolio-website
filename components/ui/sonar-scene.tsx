@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as THREE from "three"
-import { prefersReducedMotion } from "@/lib/gsap"
+import { prefersReducedMotion, ScrollTrigger } from "@/lib/gsap"
 
 /**
  * SonarScene — the sonar field as a 3D point plane (three.js).
@@ -342,6 +342,25 @@ export function SonarScene({ className }: { className?: string }) {
     }
     const onMotionPref = () => requestRender()
 
+    // ——— scroll pose: as the page travels bottom-ward the plane eases its
+    // pitch ±4° around the rest tilt with a whisper of yaw, so the field
+    // subtly re-aims instead of sitting rigidly behind the content. Driven
+    // by ScrollTrigger progress (smoother-aware) and rendered by the same
+    // on-demand loop: one frame per update, zero while the scroll is still.
+    const REST_TILT = THREE.MathUtils.degToRad(TILT_DEG)
+    const st = ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        if (prefersReducedMotion()) return
+        const p = self.progress - 0.5
+        pointsRoot.rotation.x = REST_TILT + THREE.MathUtils.degToRad(p * 8)
+        pointsRoot.rotation.y = THREE.MathUtils.degToRad(p * -4)
+        wake()
+      },
+    })
+
     const ro = new ResizeObserver(rebuild)
     const mo = new MutationObserver(readColor)
     const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -370,6 +389,7 @@ export function SonarScene({ className }: { className?: string }) {
       window.removeEventListener("blur", onLeave)
       document.removeEventListener("visibilitychange", onVisibility)
       motionMq.removeEventListener("change", onMotionPref)
+      st.kill()
       points?.geometry.dispose()
       material.dispose()
       renderer.dispose()
