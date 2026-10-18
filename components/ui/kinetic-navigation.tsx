@@ -217,12 +217,14 @@ export function KineticNavigation({
           .fromTo(topBar ?? [], { y: 0, rotate: 0 }, { y: 6.5, rotate: 45, duration: d(0.45), ease: "back.out(1.6)" }, "<")
           .fromTo(bottomBar ?? [], { y: 0, rotate: 0 }, { y: -6.5, rotate: -45, duration: d(0.45), ease: "back.out(1.6)" }, "<0.06")
           .to(midBar ?? [], { opacity: 0, scaleX: 0.2, duration: d(0.3), ease: "power2.in" }, "<")
-          // Full-screen wipe: three panels peel right→left with a slight skew.
+          // Full-screen wipe: three panels peel right→left with a slight skew
+          // and a shallow hinge (rotateY about their right edge) that reads as
+          // depth while they swing in.
           .fromTo(overlay, { autoAlpha: 0 }, { autoAlpha: 1, duration: d(0.3) }, "<")
           .fromTo(
             bgPanels,
-            { xPercent: 101, skewX: -6, transformOrigin: "right center" },
-            { xPercent: 0, skewX: 0, stagger: d(0.12), duration: d(0.6) },
+            { xPercent: 101, skewX: -6, rotateY: -12, transformPerspective: 1200, transformOrigin: "right center" },
+            { xPercent: 0, skewX: 0, rotateY: 0, stagger: d(0.12), duration: d(0.6) },
             "<",
           )
           .fromTo(
@@ -259,7 +261,7 @@ export function KineticNavigation({
             )
             .to(
               bgPanels,
-              { xPercent: 101, skewX: -6, transformOrigin: "right center", stagger: { each: d(0.1), from: "end" }, duration: d(0.55), ease: "power2.in" },
+              { xPercent: 101, skewX: -6, rotateY: -12, transformPerspective: 1200, transformOrigin: "right center", stagger: { each: d(0.1), from: "end" }, duration: d(0.55), ease: "power2.in" },
               d(0.12),
             )
             .to(overlay, { autoAlpha: 0, duration: d(0.25) }, d(0.4))
