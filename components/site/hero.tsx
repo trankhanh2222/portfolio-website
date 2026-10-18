@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react"
 import { useLanguage } from "@/providers/language-provider"
 import { HyperLabel } from "@/components/ui/hyper-label"
 import { gsap, SplitText, useGSAP, prefersReducedMotion } from "@/lib/gsap"
+import { Magnetic } from "@/components/ui/magnetic"
 
 /**
  * Hero — one master timeline choreographs the whole fold:
@@ -94,22 +95,26 @@ export function Hero() {
             data-hero-fade
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
-            <a
-              href={t.hero.ctaPrimary.href}
-              className="group bg-primary text-primary-foreground focus-visible:ring-ring/50 inline-flex h-11 items-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-[transform,box-shadow] duration-200 outline-none hover:shadow-md focus-visible:ring-3 active:scale-[0.98]"
-            >
-              <HyperLabel text={t.hero.ctaPrimary.label} className="py-0" duration={600} />
-              <ArrowRight
-                aria-hidden="true"
-                className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </a>
-            <a
-              href={t.hero.ctaSecondary.href}
-              className="border-border text-foreground hover:bg-accent focus-visible:ring-ring/50 inline-flex h-11 items-center rounded-lg border px-6 text-sm font-medium transition-[background-color,transform] duration-200 outline-none focus-visible:ring-3 active:scale-[0.98]"
-            >
-              <HyperLabel text={t.hero.ctaSecondary.label} className="py-0" duration={600} />
-            </a>
+            <Magnetic>
+              <a
+                href={t.hero.ctaPrimary.href}
+                className="group bg-primary text-primary-foreground focus-visible:ring-ring/50 inline-flex h-11 items-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-[transform,box-shadow] duration-200 outline-none hover:shadow-md focus-visible:ring-3 active:scale-[0.98]"
+              >
+                <HyperLabel text={t.hero.ctaPrimary.label} className="py-0" duration={600} />
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                />
+              </a>
+            </Magnetic>
+            <Magnetic>
+              <a
+                href={t.hero.ctaSecondary.href}
+                className="border-border text-foreground hover:bg-accent focus-visible:ring-ring/50 inline-flex h-11 items-center rounded-lg border px-6 text-sm font-medium transition-[background-color,transform] duration-200 outline-none focus-visible:ring-3 active:scale-[0.98]"
+              >
+                <HyperLabel text={t.hero.ctaSecondary.label} className="py-0" duration={600} />
+              </a>
+            </Magnetic>
           </div>
         </div>
       </div>

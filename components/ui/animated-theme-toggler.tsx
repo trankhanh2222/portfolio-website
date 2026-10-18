@@ -296,7 +296,8 @@ export const AnimatedThemeToggler = ({
             {
               duration,
               // Star: linear avoids easing overshoot that fights polygon interpolation at t→1; VT group duration is synced above.
-              easing: shape === "star" ? "linear" : "ease-in-out",
+              // The brand in-out curve (same as the GSAP "main" ease) carries the circle wipe.
+              easing: shape === "star" ? "linear" : "cubic-bezier(0.65, 0.01, 0.05, 0.99)",
               fill: "forwards",
               pseudoElement: "::view-transition-new(root)",
             }

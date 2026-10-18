@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
+import { Magnetic } from "@/components/ui/magnetic"
 
 /**
  * KineticNavigation — Sterling-Gate-style header + fullscreen overlay menu,
@@ -310,21 +311,23 @@ export function KineticNavigation({
               <div className="nav-row__right">
                 {controls}
 
-                <button
-                  type="button"
-                  className="nav-close-btn"
-                  onClick={() => setIsMenuOpen((open) => !open)}
-                  aria-expanded={isMenuOpen}
-                  aria-controls="kinetic-menu"
-                  aria-label={isMenuOpen ? closeLabel : openLabel}
-                >
-                  {/* Three bars morph into an ✕ when the menu opens. */}
-                  <span className="menu-bars" aria-hidden="true">
-                    <span className="menu-bar" />
-                    <span className="menu-bar" />
-                    <span className="menu-bar" />
-                  </span>
-                </button>
+                <Magnetic>
+                  <button
+                    type="button"
+                    className="nav-close-btn"
+                    onClick={() => setIsMenuOpen((open) => !open)}
+                    aria-expanded={isMenuOpen}
+                    aria-controls="kinetic-menu"
+                    aria-label={isMenuOpen ? closeLabel : openLabel}
+                  >
+                    {/* Three bars morph into an ✕ when the menu opens. */}
+                    <span className="menu-bars" aria-hidden="true">
+                      <span className="menu-bar" />
+                      <span className="menu-bar" />
+                      <span className="menu-bar" />
+                    </span>
+                  </button>
+                </Magnetic>
               </div>
             </nav>
           </div>
