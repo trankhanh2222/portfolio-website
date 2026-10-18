@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react"
 import { useLanguage } from "@/providers/language-provider"
 import { HyperLabel } from "@/components/ui/hyper-label"
 import { gsap, SplitText, useGSAP, prefersReducedMotion } from "@/lib/gsap"
+import { HeroFocal } from "@/components/site/hero-focal"
 import { Magnetic } from "@/components/ui/magnetic"
 
 /**
@@ -59,6 +60,9 @@ export function Hero() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_42%_38%_at_50%_50%,var(--color-background)_0%,transparent_100%)]"
       />
+
+      {/* Experimental: a slowly turning point-crystal behind the copy. */}
+      <HeroFocal />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-28 text-center">
         <div className="flex max-w-2xl flex-col items-center">
