@@ -1,25 +1,58 @@
 "use client"
 
-import { motion, useReducedMotion } from "motion/react"
-import { HyperLabel } from "@/components/ui/hyper-label"
+import * as React from "react"
 import { ArrowRight } from "lucide-react"
 import { useLanguage } from "@/providers/language-provider"
+import { HyperLabel } from "@/components/ui/hyper-label"
+import { gsap, SplitText, useGSAP, prefersReducedMotion } from "@/lib/gsap"
 
-const enter = (delay: number, reduce: boolean | null) =>
-  reduce
-    ? {}
-    : {
-        initial: { opacity: 0, y: 14, filter: "blur(6px)" },
-        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-        transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
-      }
-
+/**
+ * Hero — one master timeline choreographs the whole fold:
+ *
+ *   badge → wordmark (SplitText chars rise out of masks) → role → lede → CTAs → hint
+ *
+ * with each layer overlapping the previous by ~60% (staging: the wordmark is
+ * the hero element and lands first). Replacing the old per-element fade
+ * ladder. The name never changes between locales, so the split is done once;
+ * the HyperLabel spans inside the other layers keep handling language swaps.
+ */
 export function Hero() {
   const { t } = useLanguage()
-  const reduce = useReducedMotion()
+  const sectionRef = React.useRef<HTMLElement>(null)
+  const nameRef = React.useRef<HTMLHeadingElement>(null)
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return // everything renders visible, untouched
+
+      const split = SplitText.create(nameRef.current, {
+        type: "chars",
+        mask: "chars",
+        aria: "auto",
+      })
+
+      const fades = gsap.utils.toArray<HTMLElement>("[data-hero-fade]")
+
+      gsap.set(fades, { autoAlpha: 0, y: 18, filter: "blur(6px)" })
+
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } })
+      // The wordmark is the hero element: it leads, out of its masks, with a
+      // fast-start ease (the "main" in-out curve stalls too long for a first
+      // impression). Supporting layers fade in behind it, overlapping.
+      tl.from(split.chars, { yPercent: 118, duration: 0.9, stagger: 0.05, ease: "power4.out" }, 0)
+        .to(fades, { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.08 }, 0.08)
+
+      return () => split.revert()
+    },
+    { scope: sectionRef },
+  )
 
   return (
-    <section id="top" className="relative flex min-h-svh items-center justify-center overflow-hidden">
+    <section
+      ref={sectionRef}
+      id="top"
+      className="relative flex min-h-svh items-center justify-center overflow-hidden"
+    >
       {/* A soft wash behind the copy keeps it legible while rings pass underneath. */}
       <div
         aria-hidden="true"
@@ -28,37 +61,37 @@ export function Hero() {
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-28 text-center">
         <div className="flex max-w-2xl flex-col items-center">
-          <motion.p
-            {...enter(0, reduce)}
+          <p
+            data-hero-fade
             className="border-border text-muted-foreground mb-5 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-xs tracking-wide"
           >
             <span aria-hidden="true" className="bg-primary size-1.5 rounded-full" />
             <HyperLabel text={t.person.eyebrow} className="py-0" duration={600} />
-          </motion.p>
+          </p>
 
-          <motion.h1
-            {...enter(0.08, reduce)}
+          <h1
+            ref={nameRef}
             className="font-heading text-5xl font-semibold tracking-tight text-balance sm:text-7xl"
           >
             {t.person.name}
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            {...enter(0.14, reduce)}
+          <p
+            data-hero-fade
             className="font-mono text-sm tracking-wide text-muted-foreground"
           >
             <HyperLabel text={t.person.role} className="py-0" duration={600} />
-          </motion.p>
+          </p>
 
-          <motion.p
-            {...enter(0.2, reduce)}
+          <p
+            data-hero-fade
             className="text-muted-foreground mt-6 max-w-xl text-base text-pretty sm:text-lg"
           >
             <HyperLabel text={t.person.lede} className="py-0" duration={1400} />
-          </motion.p>
+          </p>
 
-          <motion.div
-            {...enter(0.26, reduce)}
+          <div
+            data-hero-fade
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
             <a
@@ -77,16 +110,16 @@ export function Hero() {
             >
               <HyperLabel text={t.hero.ctaSecondary.label} className="py-0" duration={600} />
             </a>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      <motion.p
-        {...enter(0.4, reduce)}
+      <p
+        data-hero-fade
         className="text-muted-foreground pointer-events-none absolute inset-x-0 bottom-6 px-4 pb-[env(safe-area-inset-bottom)] text-center font-mono text-[0.625rem] tracking-[0.18em] whitespace-nowrap uppercase sm:text-[0.6875rem] sm:tracking-widest max-sm:overflow-hidden"
       >
         <HyperLabel text={t.hero.hint} className="py-0" duration={700} />
-      </motion.p>
+      </p>
     </section>
   )
 }
