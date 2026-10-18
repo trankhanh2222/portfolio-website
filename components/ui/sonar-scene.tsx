@@ -377,5 +377,5 @@ export function SonarScene({ className }: { className?: string }) {
     }
   }, [])
 
-  return <div ref={hostRef} aria-hidden="true" className={className} />
+  return <div ref={hostRef} data-slot="sonar-scene" aria-hidden="true" className={className} />
 }

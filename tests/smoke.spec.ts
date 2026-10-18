@@ -27,8 +27,11 @@ test.describe("portfolio smoke", () => {
       await expect(page.locator(`#${id}`)).toBeAttached()
     }
 
-    // Sonar field canvas mounts behind the hero
-    await expect(page.locator('[data-slot="sonar-grid"] canvas')).toBeVisible()
+    // Sonar field canvas mounts behind the hero — the 2D grid, or the 3D
+    // point plane once fine-pointer desktops swap to it after mount.
+    await expect(
+      page.locator('[data-slot="sonar-grid"] canvas, [data-slot="sonar-scene"] canvas'),
+    ).toBeVisible()
 
     // Footer: wordmark svg + shutter glyph rows
     await expect(page.locator("footer.sgf .sgf-svg")).toBeVisible()
