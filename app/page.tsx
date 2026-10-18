@@ -1,4 +1,5 @@
 import { ScrollProgress } from "@/components/ui/scroll-progress"
+import { SmoothScroll } from "@/components/ui/smooth-scroll"
 import { SonarField } from "@/components/site/sonar-field"
 import { ScrollChoreography } from "@/components/site/scroll-choreography"
 import { SiteHeader } from "@/components/site/site-header"
@@ -12,20 +13,24 @@ import { SiteFooter } from "@/components/site/site-footer"
 export default function Page() {
   return (
     <>
-      {/* Full-page backdrop (tappable) + reading progress. */}
+      {/* Fixed layers live OUTSIDE the smooth wrapper: position:fixed breaks
+          inside a transformed subtree. */}
       <SonarField />
       <ScrollProgress className="bg-primary" />
 
       <SiteHeader />
       <ScrollChoreography />
-      <main id="main" tabIndex={-1}>
-        <Hero />
-        <About />
-        <Skills />
-        <Experience />
-        <Contact />
-      </main>
-      <SiteFooter />
+
+      <SmoothScroll>
+        <main id="main" tabIndex={-1}>
+          <Hero />
+          <About />
+          <Skills />
+          <Experience />
+          <Contact />
+        </main>
+        <SiteFooter />
+      </SmoothScroll>
     </>
   )
 }
