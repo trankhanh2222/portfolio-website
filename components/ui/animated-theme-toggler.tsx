@@ -232,10 +232,18 @@ export const AnimatedThemeToggler = ({
     )
 
     const applyTheme = () => {
-      const newTheme = !isDark
-      // Always toggle the class synchronously so the View Transitions API
-      // snapshots the new theme inside the startViewTransition callback.
-      document.documentElement.classList.toggle("dark")
+      // The html class is the ground truth in uncontrolled mode: the icon
+      // state can lag the DOM (its observer effect may not have run yet when
+      // a click races hydration), and a stale isDark would flip the wrong
+      // way — removing the class while persisting the old theme.
+      const currentlyDark = isControlled
+        ? isDark
+        : document.documentElement.classList.contains("dark")
+      const newTheme = !currentlyDark
+      // Write the class synchronously and deterministically (explicit force,
+      // not a blind toggle) so the View Transitions API snapshots the new
+      // theme inside the startViewTransition callback.
+      document.documentElement.classList.toggle("dark", newTheme)
       if (isControlled) {
         onThemeChange?.(newTheme ? "dark" : "light")
       } else {
