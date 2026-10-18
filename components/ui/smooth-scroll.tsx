@@ -31,7 +31,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       const smoother = ScrollSmoother.create({
         wrapper: ref.current,
         content: ref.current?.querySelector("[data-smooth-content]"),
-        smooth: 0.9,
+        smooth: 0.4,
         effects: false,
         smoothTouch: false,
       })

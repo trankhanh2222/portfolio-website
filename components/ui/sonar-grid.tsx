@@ -118,6 +118,8 @@ export function SonarGrid({
     // touch and reduced-motion users never pay for the listener work.
     const GLOW_RADIUS = 150
     const cursor = { x: -9999, y: -9999, tx: -9999, ty: -9999, glow: 0, active: false }
+    let cursorDirty = true
+    let hostRect: DOMRect | null = null
     const finePointer = window.matchMedia("(pointer: fine)")
     const followEnabled = () =>
       opts.current.followCursor && finePointer.matches && !reduceMotion.matches
@@ -209,7 +211,8 @@ export function SonarGrid({
     }
 
     const resize = () => {
-      const rect = host.getBoundingClientRect()
+      hostRect = host.getBoundingClientRect()
+      const rect = hostRect
       width = Math.max(1, Math.round(rect.width))
       height = Math.max(1, Math.round(rect.height))
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
@@ -246,8 +249,16 @@ export function SonarGrid({
         nextPing = now + o.pingEvery * 1000
       }
       draw(now)
-      if (ringsRef.current.length > 0 || (followEnabled() && (cursor.active || cursor.glow > 0.01)))
-        raf = requestAnimationFrame(tick)
+      // Sleep once nothing needs a frame: no rings, pointer idle (no new
+      // move since the last paint), trail caught up, glow settled. The
+      // canvas keeps its last paint; pointermove wakes the loop again.
+      const trailSettled =
+        Math.abs(cursor.x - cursor.tx) <= 0.5 && Math.abs(cursor.y - cursor.ty) <= 0.5
+      const glowSettled =
+        Math.abs(cursor.glow - (cursor.active ? 1 : 0)) <= 0.002
+      const waitForCursor = followEnabled() && (cursorDirty || !trailSettled || !glowSettled)
+      cursorDirty = false
+      if (ringsRef.current.length > 0 || waitForCursor) raf = requestAnimationFrame(tick)
       else if (o.pingEvery > 0) scheduleIdle(nextPing - now)
     }
 
@@ -276,7 +287,7 @@ export function SonarGrid({
     }
     const onMove = (e: PointerEvent) => {
       if (!followEnabled()) return
-      const rect = host.getBoundingClientRect()
+      const rect = hostRect ?? host.getBoundingClientRect()
       cursor.tx = e.clientX - rect.left
       cursor.ty = e.clientY - rect.top
       if (!cursor.active) {
@@ -286,11 +297,16 @@ export function SonarGrid({
         cursor.y = cursor.ty
       }
       cursor.active = true
+      cursorDirty = true
       wake()
+    }
+    const onScrollRect = () => {
+      hostRect = host.getBoundingClientRect()
     }
     const onLeave = () => {
       if (!cursor.active) return
       cursor.active = false
+      cursorDirty = true
       wake()
     }
 
@@ -316,6 +332,7 @@ export function SonarGrid({
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "style", "data-theme"] })
     listenTarget.addEventListener("pointerdown", onDown)
     window.addEventListener("pointermove", onMove, { passive: true })
+    window.addEventListener("scroll", onScrollRect, { passive: true, capture: true })
     document.documentElement.addEventListener("pointerleave", onLeave)
     window.addEventListener("blur", onLeave)
     document.addEventListener("visibilitychange", onVisibility)
@@ -328,6 +345,7 @@ export function SonarGrid({
       mo.disconnect()
       listenTarget.removeEventListener("pointerdown", onDown)
       window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("scroll", onScrollRect, { capture: true })
       document.documentElement.removeEventListener("pointerleave", onLeave)
       window.removeEventListener("blur", onLeave)
       document.removeEventListener("visibilitychange", onVisibility)
