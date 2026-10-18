@@ -23,6 +23,12 @@ export interface SonarGridProps extends React.ComponentProps<"div"> {
   /** Emit a ping where the user taps or clicks. */
   interactive?: boolean
   /**
+   * Dots near the pointer glow and swell, trailing it with a slight lag —
+   * a cursor "flashlight" on the field. Only active for fine pointers
+   * (mouse/trackpad) and skipped under `prefers-reduced-motion`.
+   */
+  followCursor?: boolean
+  /**
    * Where the tap listener attaches. `"self"` (the default) suits an inline,
    * clickable field. A fixed full-page layer that sits behind the content
    * must use `"window"` so taps anywhere still reach it.
@@ -61,6 +67,7 @@ export function SonarGrid({
   ringWidth = 90,
   amplitude = 2.2,
   interactive = true,
+  followCursor = false,
   listenOn = "self",
   maxRings = 6,
   seedPing = true,
@@ -76,9 +83,9 @@ export function SonarGrid({
   const refreshRef = React.useRef<() => void>(() => {})
 
   // The render loop reads props through this ref so knob changes apply live without restarting it.
-  const opts = React.useRef({ spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, listenOn, maxRings, seedPing, pingArea })
+  const opts = React.useRef({ spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, followCursor, listenOn, maxRings, seedPing, pingArea })
   // eslint-disable-next-line react-hooks/refs -- vendored from 21st.dev: the canvas loop reads fresh props on every render on purpose
-  opts.current = { spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, listenOn, maxRings, seedPing, pingArea }
+  opts.current = { spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, followCursor, listenOn, maxRings, seedPing, pingArea }
 
   const setHost = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -105,6 +112,15 @@ export function SonarGrid({
     let seeded = false
     let stroke = ""
     let nextPing = performance.now() + opts.current.pingEvery * 1000
+
+    // Cursor "flashlight": a lerped pointer position whose energy folds into
+    // the same hot-dot pipeline as the rings. Only follows fine pointers;
+    // touch and reduced-motion users never pay for the listener work.
+    const GLOW_RADIUS = 150
+    const cursor = { x: -9999, y: -9999, tx: -9999, ty: -9999, glow: 0, active: false }
+    const finePointer = window.matchMedia("(pointer: fine)")
+    const followEnabled = () =>
+      opts.current.followCursor && finePointer.matches && !reduceMotion.matches
 
     const readColor = () => {
       stroke = getComputedStyle(canvas).color
@@ -137,6 +153,17 @@ export function SonarGrid({
 
       // Pass 1: every resting dot in a single path and a single fill.
       const hot: number[] = []
+      const following = followEnabled()
+      if (following) {
+        cursor.glow += ((cursor.active ? 1 : 0) - cursor.glow) * 0.12
+      } else if (cursor.glow !== 0) {
+        cursor.glow = 0
+      }
+      const glow = following ? cursor.glow : 0
+      if (glow > 0.01) {
+        cursor.x += (cursor.tx - cursor.x) * 0.16
+        cursor.y += (cursor.ty - cursor.y) * 0.16
+      }
       ctx.globalAlpha = o.baseOpacity
       ctx.beginPath()
       for (let i = 0; i < cols; i++) {
@@ -151,6 +178,14 @@ export function SonarGrid({
             const t = 1 - dist / o.ringWidth
             const k = t * t * (3 - 2 * t) * r.fade // smoothstep, fading with age
             if (k > energy) energy = k
+          }
+          if (glow > 0.01) {
+            const dist = Math.hypot(cx - cursor.x, cy - cursor.y)
+            if (dist < GLOW_RADIUS) {
+              const t = 1 - dist / GLOW_RADIUS
+              const k = t * t * (3 - 2 * t) * glow // same smoothstep falloff
+              if (k > energy) energy = k
+            }
           }
           if (energy < 0.01) {
             ctx.moveTo(cx + o.dotRadius, cy)
@@ -211,7 +246,8 @@ export function SonarGrid({
         nextPing = now + o.pingEvery * 1000
       }
       draw(now)
-      if (ringsRef.current.length > 0) raf = requestAnimationFrame(tick)
+      if (ringsRef.current.length > 0 || (followEnabled() && (cursor.active || cursor.glow > 0.01)))
+        raf = requestAnimationFrame(tick)
       else if (o.pingEvery > 0) scheduleIdle(nextPing - now)
     }
 
@@ -238,6 +274,25 @@ export function SonarGrid({
     const onVisibility = () => {
       if (!document.hidden) wake()
     }
+    const onMove = (e: PointerEvent) => {
+      if (!followEnabled()) return
+      const rect = host.getBoundingClientRect()
+      cursor.tx = e.clientX - rect.left
+      cursor.ty = e.clientY - rect.top
+      if (!cursor.active) {
+        // (Re)entering: start the trail at the pointer instead of gliding in
+        // from wherever it last parked (or off-screen).
+        cursor.x = cursor.tx
+        cursor.y = cursor.ty
+      }
+      cursor.active = true
+      wake()
+    }
+    const onLeave = () => {
+      if (!cursor.active) return
+      cursor.active = false
+      wake()
+    }
 
     // Taps reach a background layer through the window; a normal inline field
     // simply listens on itself.
@@ -260,6 +315,9 @@ export function SonarGrid({
     io.observe(host)
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "style", "data-theme"] })
     listenTarget.addEventListener("pointerdown", onDown)
+    window.addEventListener("pointermove", onMove, { passive: true })
+    document.documentElement.addEventListener("pointerleave", onLeave)
+    window.addEventListener("blur", onLeave)
     document.addEventListener("visibilitychange", onVisibility)
     reduceMotion.addEventListener("change", wake)
     wake()
@@ -269,6 +327,9 @@ export function SonarGrid({
       io.disconnect()
       mo.disconnect()
       listenTarget.removeEventListener("pointerdown", onDown)
+      window.removeEventListener("pointermove", onMove)
+      document.documentElement.removeEventListener("pointerleave", onLeave)
+      window.removeEventListener("blur", onLeave)
       document.removeEventListener("visibilitychange", onVisibility)
       reduceMotion.removeEventListener("change", wake)
       cancelAnimationFrame(raf)
