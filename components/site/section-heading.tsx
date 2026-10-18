@@ -18,7 +18,7 @@ export function SectionHeading({
   className?: string
 }) {
   return (
-    <div className={cn("flex items-baseline gap-3", className)}>
+    <div data-drift className={cn("flex items-baseline gap-3", className)}>
       {index && (
         <span aria-hidden="true" className="font-mono text-xs text-muted-foreground">
           {index}

@@ -1,5 +1,6 @@
 import { ScrollProgress } from "@/components/ui/scroll-progress"
 import { SonarField } from "@/components/site/sonar-field"
+import { ScrollChoreography } from "@/components/site/scroll-choreography"
 import { SiteHeader } from "@/components/site/site-header"
 import { Hero } from "@/components/site/hero"
 import { About } from "@/components/site/about"
@@ -16,6 +17,7 @@ export default function Page() {
       <ScrollProgress className="bg-primary" />
 
       <SiteHeader />
+      <ScrollChoreography />
       <main id="main" tabIndex={-1}>
         <Hero />
         <About />

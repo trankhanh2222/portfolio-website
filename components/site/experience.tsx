@@ -7,6 +7,7 @@ import { HyperLabel } from "@/components/ui/hyper-label"
 import { Pending } from "@/components/site/pending"
 import { SectionHeading } from "@/components/site/section-heading"
 import { useLanguage } from "@/providers/language-provider"
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap"
 
 const itemVariants = {
   hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
@@ -31,8 +32,51 @@ export function Experience() {
   })
   const railProgress = useSpring(scrollYProgress, { stiffness: 90, damping: 24 })
 
+  // Sonar motif on the rail: as the scroll progress passes a row for the
+  // first time, a small ring expands from the rail at that row's midline.
+  const sectionRef = useRef<HTMLElement>(null)
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return
+      const wrapper = listRef.current?.parentElement
+      if (!wrapper) return
+      const railX = window.matchMedia("(min-width: 640px)").matches ? -28 : -16
+
+      gsap.utils.toArray<HTMLElement>("ol > li").forEach((li) => {
+        ScrollTrigger.create({
+          trigger: li,
+          start: "top 55%",
+          once: true,
+          onEnter: () => {
+            const ring = document.createElement("span")
+            ring.setAttribute("aria-hidden", "true")
+            ring.style.cssText =
+              "position:absolute;width:2.25rem;height:2.25rem;border-radius:9999px;border:1.5px solid var(--color-primary);pointer-events:none"
+            wrapper.appendChild(ring)
+            gsap.set(ring, {
+              left: railX - 18,
+              top: li.offsetTop + li.offsetHeight / 2 - 18,
+            })
+            gsap.fromTo(
+              ring,
+              { scale: 0.2, autoAlpha: 0.9 },
+              {
+                scale: 1.2,
+                autoAlpha: 0,
+                duration: 0.9,
+                ease: "power2.out",
+                onComplete: () => ring.remove(),
+              },
+            )
+          },
+        })
+      })
+    },
+    { scope: sectionRef },
+  )
+
   return (
-    <section id="experience" className="scroll-mt-24 py-14 sm:py-20">
+    <section ref={sectionRef} id="experience" className="scroll-mt-24 py-14 sm:py-20">
       <div className="mx-auto grid max-w-6xl gap-8 px-6 md:grid-cols-[210px_minmax(0,1fr)] md:gap-12">
         <BlurFade inView direction="up">
           <SectionHeading index={experience.index} title={experience.title} />
